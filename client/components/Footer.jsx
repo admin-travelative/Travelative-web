@@ -33,11 +33,8 @@ export default function Footer() {
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
                     {/* Brand Column */}
                     <div className="lg:col-span-2">
-                        <Link href="/" className="flex items-center gap-2 mb-4">
-                            <div className="w-9 h-9 bg-emerald-600 rounded-xl flex items-center justify-center">
-                                <Globe className="w-5 h-5 text-white" />
-                            </div>
-                            <span className="text-xl font-serif font-bold text-white">Travelative</span>
+                        <Link href="/" className="flex items-center mb-6 transition-transform duration-300 hover:scale-105 origin-left">
+                            <img src="/Travelative_logo.png" alt="Travelative" className="h-20 w-auto object-contain" />
                         </Link>
                         <p className="text-gray-400 leading-relaxed mb-6 max-w-sm">
                             We craft premium travel experiences that turn your dream vacations into unforgettable realities.

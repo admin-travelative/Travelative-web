@@ -36,33 +36,29 @@ export default function Navbar() {
             transition={{ duration: 0.6, ease: 'easeOut' }}
         >
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex items-center justify-between h-18 py-4">
+                <div className="flex items-center justify-between h-20 py-4 relative">
                     {/* Logo */}
-                    <Link href="/" className="flex items-center gap-2 group">
-                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-300 ${isSolid ? 'bg-emerald-600' : 'bg-white/20 border border-white/30'}`}>
-                            <Globe className={`w-5 h-5 ${isSolid ? 'text-white' : 'text-white'}`} />
-                        </div>
-                        <span className={`text-xl font-serif font-bold tracking-tight transition-colors duration-300 ${isSolid ? 'text-gray-900' : 'text-white'}`}>
-                            Travelative
-                        </span>
+                    <Link href="/" className="flex items-center group z-10 transition-transform duration-300 hover:scale-105">
+                        <img src="/Travelative_logo.png" alt="Travelative" className="h-16 md:h-20 w-auto object-contain" />
                     </Link>
 
-                    {/* Desktop Nav */}
-                    <nav className="hidden md:flex items-center gap-8">
+                    {/* Desktop Nav - Centered perfectly */}
+                    <nav className="hidden md:flex items-center justify-center gap-10 absolute left-1/2 -translate-x-1/2 w-full max-w-lg">
                         {navLinks.map((link) => (
                             <Link
                                 key={link.href}
                                 href={link.href}
-                                className={`text-sm font-semibold transition-colors duration-300 hover:text-emerald-500 ${isSolid ? 'text-gray-700' : 'text-white/90 hover:text-white'
+                                className={`relative text-[15px] font-semibold transition-colors duration-300 py-2 group ${isSolid ? 'text-gray-800 hover:text-emerald-600' : 'text-white/95 hover:text-white'
                                     }`}
                             >
                                 {link.label}
+                                <span className={`absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-0.5 rounded-full transition-all duration-300 group-hover:w-full ${isSolid ? 'bg-emerald-500' : 'bg-white'}`}></span>
                             </Link>
                         ))}
                     </nav>
 
                     {/* CTA Buttons */}
-                    <div className="hidden md:flex items-center gap-3">
+                    <div className="hidden md:flex items-center gap-4 z-10">
                         <a
                             href="https://wa.me/91XXXXXXXXXX"
                             target="_blank"
@@ -73,7 +69,7 @@ export default function Navbar() {
                             <Phone className="w-4 h-4" />
                             <span>Quick Call</span>
                         </a>
-                        <Link href="/packages" className="btn-primary text-sm py-2.5 px-5">
+                        <Link href="/packages" className="btn-primary text-sm py-2.5 px-6 shadow-lg shadow-emerald-500/20">
                             Explore Packages
                         </Link>
                     </div>

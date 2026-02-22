@@ -28,13 +28,11 @@ export default function Sidebar() {
         <div className="flex flex-col h-full">
             {/* Logo */}
             <div className="p-6 border-b border-gray-100">
-                <Link href="/admin" className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-emerald-600 rounded-xl flex items-center justify-center">
-                        <Globe className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                        <div className="font-serif font-bold text-gray-900 text-lg leading-none">Travelative</div>
-                        <div className="text-xs text-gray-400 font-medium">Admin Panel</div>
+                <Link href="/admin" className="flex items-center gap-3 group">
+                    <img src="/Travelative_logo.png" alt="Travelative" className="h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105 origin-left" />
+                    <div className="flex flex-col">
+                        <span className="font-serif font-bold text-gray-900 text-lg leading-tight transition-colors group-hover:text-emerald-700">Travelative</span>
+                        <span className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest">Admin Panel</span>
                     </div>
                 </Link>
             </div>
@@ -50,8 +48,8 @@ export default function Sidebar() {
                             href={href}
                             onClick={() => setMobileOpen(false)}
                             className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 group ${isActive
-                                    ? 'bg-emerald-50 text-emerald-700'
-                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                ? 'bg-emerald-50 text-emerald-700'
+                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                                 }`}
                         >
                             <Icon className={`w-5 h-5 ${isActive ? 'text-emerald-600' : 'text-gray-400 group-hover:text-gray-600'}`} />
