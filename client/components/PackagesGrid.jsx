@@ -6,10 +6,20 @@ import MoodFilter from './MoodFilter';
 
 export default function PackagesGrid({ packages }) {
     const [activeFilter, setActiveFilter] = useState('all');
+    const [destinationType, setDestinationType] = useState('all'); // all, domestic, international
 
-    const filtered = activeFilter === 'all'
-        ? packages
-        : packages.filter((p) => p.category === activeFilter);
+    // Filter by Destination Type then by Mood Category
+    let filtered = [...packages];
+
+    if (destinationType === 'domestic') {
+        filtered = filtered.filter((p) => p.country?.toLowerCase() === 'india');
+    } else if (destinationType === 'international') {
+        filtered = filtered.filter((p) => p.country?.toLowerCase() !== 'india');
+    }
+
+    if (activeFilter !== 'all') {
+        filtered = filtered.filter((p) => p.category === activeFilter);
+    }
 
     return (
         <section className="py-20 bg-gray-50" id="packages">
@@ -32,7 +42,7 @@ export default function PackagesGrid({ packages }) {
                     </p>
                 </motion.div>
 
-                {/* Mood Filter */}
+                {/* Domestic / International Filter & Mood Filter */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -40,6 +50,31 @@ export default function PackagesGrid({ packages }) {
                     transition={{ delay: 0.2 }}
                     className="mb-10"
                 >
+                    {/* Destination Toggle */}
+                    <div className="flex justify-center mb-8">
+                        <div className="inline-flex bg-white shadow-sm border border-gray-100 p-1.5 rounded-full">
+                            {['all', 'domestic', 'international'].map((type) => (
+                                <button
+                                    key={type}
+                                    onClick={() => setDestinationType(type)}
+                                    className={`relative px-6 py-2.5 text-sm font-bold rounded-full transition-colors ${destinationType === type ? 'text-white' : 'text-gray-600 hover:text-gray-900'
+                                        }`}
+                                >
+                                    {destinationType === type && (
+                                        <motion.div
+                                            layoutId="homeDestTypeTab"
+                                            className="absolute inset-0 bg-emerald-600 rounded-full shadow-md"
+                                            initial={false}
+                                            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                                        />
+                                    )}
+                                    <span className="relative z-10 capitalize">{type === 'all' ? 'All Destinations' : type}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Mood Filter */}
                     <MoodFilter activeFilter={activeFilter} onFilterChange={setActiveFilter} />
                 </motion.div>
 
