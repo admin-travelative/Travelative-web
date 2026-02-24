@@ -18,9 +18,9 @@ export default function ContactPage() {
                         <h2 className="text-2xl font-bold text-gray-900 mb-6">Get in Touch</h2>
                         <div className="space-y-6">
                             {[
-                                { Icon: Phone, title: 'Call Us', details: '+91 XXXXX XXXXX', sub: 'Available 24/7 for urgent queries' },
-                                { Icon: Mail, title: 'Email', details: 'hello@travelative.com', sub: 'We reply within 2 hours' },
-                                { Icon: MapPin, title: 'Office', details: 'Connaught Place, New Delhi', sub: 'India - 110001' },
+                                { Icon: Phone, title: 'Call Us', details: '+91 070882 21122', sub: 'Available 24/7 for urgent queries' },
+                                { Icon: Mail, title: 'Email', details: 'info@travelative.com', sub: 'We reply within 2 hours' },
+                                { Icon: MapPin, title: 'Office', details: 'Phase 1, NH 58, Meerut-Delhi Road', sub: 'Muradnagar, Ghaziabad - 201206' },
                                 { Icon: Clock, title: 'Business Hours', details: 'Monday - Saturday', sub: '10:00 AM to 7:00 PM' }
                             ].map(({ Icon, title, details, sub }, i) => (
                                 <div key={i} className="flex gap-4">
@@ -39,7 +39,7 @@ export default function ContactPage() {
                         <div className="mt-8 p-6 bg-gradient-to-br from-ocean-50 to-emerald-50 rounded-2xl border border-emerald-100">
                             <h3 className="font-bold text-gray-900 mb-2">Want a custom itinerary?</h3>
                             <p className="text-gray-600 text-sm mb-4">Our travel designers can build a unique trip just for you based on your preferences and budget.</p>
-                            <a href="https://wa.me/91XXXXXXXXXX?text=Hi! I am looking for a custom travel itinerary." target="_blank" rel="noopener noreferrer" className="btn-primary w-full shadow-md text-sm">
+                            <a href="https://wa.me/9107088221122?text=Hi! I am looking for a custom travel itinerary." target="_blank" rel="noopener noreferrer" className="btn-primary w-full shadow-md text-sm">
                                 Chat on WhatsApp
                             </a>
                         </div>

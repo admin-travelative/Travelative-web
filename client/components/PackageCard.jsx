@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Clock, MapPin, Star, TrendingUp, AlertCircle, ArrowRight, Cloud, CloudRain, Snowflake, Sun, Wind } from 'lucide-react';
 import { getCachedWeather } from '@/lib/weather';
@@ -70,16 +71,18 @@ export default function PackageCard({ pkg, index = 0 }) {
         <motion.div
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
+            viewport={{ once: true, margin: "0px 0px -50px 0px" }}
+            transition={{ duration: 0.5, delay: Math.min(index * 0.1, 0.3) }}
         >
             <Link href={`/packages/${pkg.slug}`} className="group block card">
                 {/* Image Section */}
                 <div className="relative h-56 overflow-hidden">
-                    <img
+                    <Image
                         src={image}
                         alt={pkg.title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className="object-cover transition-transform duration-700 group-hover:scale-110"
                     />
                     {/* Gradient overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, CheckCircle, Loader2 } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-const WHATSAPP_NUMBER = '91XXXXXXXXXX'; // Replace with actual number
+const WHATSAPP_NUMBER = '9107088221122'; // Replace with actual number
 
 export default function InquiryForm({ isOpen, onClose, defaultPackage = '', isInline = false }) {
     const [form, setForm] = useState({

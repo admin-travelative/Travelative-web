@@ -45,35 +45,37 @@ export default function Footer() {
                         <div className="space-y-3">
                             <a href="tel:+91XXXXXXXXXX" className="flex items-center gap-3 text-gray-400 hover:text-emerald-400 transition-colors duration-200">
                                 <Phone className="w-4 h-4 flex-shrink-0" />
-                                <span>+91 XXXXX XXXXX</span>
+                                <span>+91 070882 21122</span>
                             </a>
-                            <a href="mailto:hello@travelative.com" className="flex items-center gap-3 text-gray-400 hover:text-emerald-400 transition-colors duration-200">
+                            <a href="mailto:info@travelative.com" className="flex items-center gap-3 text-gray-400 hover:text-emerald-400 transition-colors duration-200">
                                 <Mail className="w-4 h-4 flex-shrink-0" />
-                                <span>hello@travelative.com</span>
+                                <span>info@travelative.com</span>
                             </a>
                             <div className="flex items-center gap-3 text-gray-400">
                                 <MapPin className="w-4 h-4 flex-shrink-0" />
-                                <span>New Delhi, India</span>
+                                <span>Muradnagar, Ghaziabad</span>
                             </div>
                         </div>
 
-                        {/* Social Links */}
                         <div className="flex gap-3 mt-6">
-                            {[
-                                { Icon: Instagram, label: 'Instagram' },
-                                { Icon: Facebook, label: 'Facebook' },
-                                { Icon: Twitter, label: 'Twitter' },
-                                { Icon: Youtube, label: 'YouTube' },
-                            ].map(({ Icon, label }) => (
-                                <a
-                                    key={label}
-                                    href="#"
-                                    aria-label={label}
-                                    className="w-10 h-10 bg-gray-800 hover:bg-emerald-600 rounded-xl flex items-center justify-center transition-colors duration-200"
-                                >
-                                    <Icon className="w-5 h-5" />
-                                </a>
-                            ))}
+                            <a
+                                href="https://www.instagram.com/travelativeup14/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label="Instagram"
+                                className="w-10 h-10 bg-gray-800 hover:bg-emerald-600 rounded-xl flex items-center justify-center transition-colors duration-200"
+                            >
+                                <Instagram className="w-5 h-5" />
+                            </a>
+                            <a
+                                href="https://www.facebook.com/profile.php?id=61556093471104&mibextid=ZbWKwL"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label="Facebook"
+                                className="w-10 h-10 bg-gray-800 hover:bg-emerald-600 rounded-xl flex items-center justify-center transition-colors duration-200"
+                            >
+                                <Facebook className="w-5 h-5" />
+                            </a>
                         </div>
                     </div>
 

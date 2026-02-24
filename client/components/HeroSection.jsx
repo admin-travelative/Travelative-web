@@ -1,6 +1,7 @@
 'use client';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { ArrowRight, Star } from 'lucide-react';
 
@@ -46,23 +47,29 @@ function WhatsAppIcon({ className = '' }) {
 }
 
 export default function HeroSection() {
-    const WHATSAPP_NUMBER = '91XXXXXXXXXX';
+    const WHATSAPP_NUMBER = '9107088221122';
     const WHATSAPP_MESSAGE = "Hi Travelative! I'm interested in your travel packages. Can you please help me?";
 
     return (
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
             {/* Background Image */}
             <motion.div
-                className="absolute inset-0 h-full w-full bg-cover bg-center bg-no-repeat"
-                style={{
-                    backgroundImage: "url('/Travelative_bg.jpg')",
-                    willChange: 'transform',
-                }}
+                className="absolute inset-0 h-full w-full"
                 initial={{ scale: 1 }}
                 animate={{ scale: 1.12 }}
                 transition={{ duration: 18, ease: 'easeInOut', repeat: Infinity, repeatType: 'reverse' }}
                 aria-hidden="true"
-            />
+            >
+                <Image
+                    src="/Travelative_bg.jpg"
+                    alt="Luxury Travel Background"
+                    fill
+                    priority
+                    sizes="100vw"
+                    className="object-cover"
+                    style={{ willChange: 'transform' }}
+                />
+            </motion.div>
             {/* Dark Overlay with gradient */}
             <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
             {/* Animated green gradient accent */}

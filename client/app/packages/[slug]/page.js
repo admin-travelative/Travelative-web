@@ -327,7 +327,7 @@ export default function PackageDetailPage({ params }) {
                                             Book Now – {formatPrice(pkg.price)}
                                         </button>
                                         <a
-                                            href={`https://wa.me/91XXXXXXXXXX?text=${encodeURIComponent(`Hi! I'm interested in the ${pkg.title} package (${pkg.duration}) at ${formatPrice(pkg.price)}/person. Please share more details.`)}`}
+                                            href={`https://wa.me/9107088221122?text=${encodeURIComponent(`Hi! I'm interested in the ${pkg.title} package (${pkg.duration}) at ${formatPrice(pkg.price)}/person. Please share more details.`)}`}
                                             target="_blank" rel="noopener noreferrer"
                                             className="flex items-center justify-center gap-2 w-full py-3 border-2 border-gray-200 hover:border-green-400 rounded-xl font-semibold text-gray-700 hover:text-green-600 transition-all text-sm"
                                         >

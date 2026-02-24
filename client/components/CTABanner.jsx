@@ -28,7 +28,7 @@ export default function CTABanner() {
                             Explore All Packages <ArrowRight className="w-5 h-5" />
                         </Link>
                         <a
-                            href="https://wa.me/91XXXXXXXXXX?text=Hi! I'd like a free travel consultation."
+                            href="https://wa.me/9107088221122?text=Hi! I'd like a free travel consultation."
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center justify-center w-full sm:w-auto gap-2 px-6 sm:px-8 py-3.5 sm:py-4 border-2 border-white/40 hover:border-white/80 text-white font-semibold rounded-full transition-all duration-300"

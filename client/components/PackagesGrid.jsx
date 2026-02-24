@@ -51,13 +51,13 @@ export default function PackagesGrid({ packages }) {
                     className="mb-10"
                 >
                     {/* Destination Toggle */}
-                    <div className="mb-8 -mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto scrollbar-hide">
-                        <div className="inline-flex min-w-max bg-white shadow-sm border border-gray-100 p-1.5 rounded-full mx-auto">
+                    <div className="flex justify-center mb-8 px-4 w-full">
+                        <div className="flex bg-white shadow-sm border border-gray-100 p-1.5 rounded-full overflow-x-auto scrollbar-hide w-full sm:w-auto max-w-full">
                             {['all', 'domestic', 'international'].map((type) => (
                                 <button
                                     key={type}
                                     onClick={() => setDestinationType(type)}
-                                    className={`relative px-4 sm:px-6 py-2.5 text-xs sm:text-sm font-bold rounded-full transition-colors whitespace-nowrap ${destinationType === type ? 'text-white' : 'text-gray-600 hover:text-gray-900'
+                                    className={`relative px-6 py-2.5 text-sm font-bold rounded-full transition-colors whitespace-nowrap flex-1 sm:flex-none text-center ${destinationType === type ? 'text-white' : 'text-gray-600 hover:text-gray-900'
                                         }`}
                                 >
                                     {destinationType === type && (
