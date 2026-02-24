@@ -65,11 +65,11 @@ export default function InquiryForm({ isOpen, onClose, defaultPackage = '', isIn
                         animate={isInline ? false : { scale: 1, opacity: 1, y: 0 }}
                         exit={isInline ? false : { scale: 0.9, opacity: 0 }}
                         transition={{ type: 'spring', duration: 0.4 }}
-                        className={`bg-white rounded-3xl w-full max-w-lg overflow-hidden ${isInline ? '' : 'shadow-2xl'}`}
+                        className={`bg-white rounded-3xl w-full max-w-lg overflow-hidden ${isInline ? '' : 'shadow-2xl max-h-[90vh] overflow-y-auto'}`}
                     >
                         {/* Header */}
                         {!isInline && (
-                            <div className="bg-gradient-to-r from-emerald-600 to-emerald-800 p-6">
+                            <div className="bg-gradient-to-r from-emerald-600 to-emerald-800 p-5 sm:p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <h2 className="text-xl font-serif font-bold text-white">Book Your Dream Trip</h2>
@@ -83,7 +83,7 @@ export default function InquiryForm({ isOpen, onClose, defaultPackage = '', isIn
                         )}
 
                         {/* Body */}
-                        <div className={isInline ? "" : "p-6"}>
+                        <div className={isInline ? "" : "p-5 sm:p-6"}>
                             {success ? (
                                 <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center py-8">
                                     <CheckCircle className="w-16 h-16 text-emerald-500 mx-auto mb-4" />
@@ -92,7 +92,7 @@ export default function InquiryForm({ isOpen, onClose, defaultPackage = '', isIn
                                 </motion.div>
                             ) : (
                                 <form onSubmit={handleSubmit} className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
                                             <label className="form-label">Your Name *</label>
                                             <input name="name" value={form.name} onChange={handleChange} required placeholder="Rahul Sharma" className="form-input" />
@@ -110,7 +110,7 @@ export default function InquiryForm({ isOpen, onClose, defaultPackage = '', isIn
                                         <label className="form-label">Interested Package</label>
                                         <input name="packageTitle" value={form.packageTitle} onChange={handleChange} placeholder="e.g. Maldives Luxury Escape" className="form-input" />
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
                                             <label className="form-label">Travel Date</label>
                                             <input name="travelDate" type="date" value={form.travelDate} onChange={handleChange} className="form-input" min={new Date().toISOString().split('T')[0]} />

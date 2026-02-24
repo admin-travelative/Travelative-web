@@ -1,0 +1,12 @@
+# Root dependencies
+/node_modules/
+
+# Local dev logs
+*.log
+*-dev.log
+*-dev.err.log
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/

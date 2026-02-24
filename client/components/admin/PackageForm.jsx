@@ -26,8 +26,12 @@ export default function PackageForm({ initialData = null, packageId = null }) {
         description: initialData?.description || '',
         shortDescription: initialData?.shortDescription || '',
         category: initialData?.category || 'Adventure',
+        tagsText: Array.isArray(initialData?.tags) ? initialData.tags.join(', ') : '',
+        travelerTypes: initialData?.travelerTypes || [],
+        locationType: initialData?.locationType || '',
         location: initialData?.location || '',
         country: initialData?.country || '',
+        durationDays: initialData?.durationDays || '',
         rating: initialData?.rating || 4.5,
         reviewCount: initialData?.reviewCount || 0,
         isFeatured: initialData?.isFeatured || false,
@@ -74,22 +78,46 @@ export default function PackageForm({ initialData = null, packageId = null }) {
         set('itinerary', itinerary);
     };
 
+    const toggleTravelerType = (type) => {
+        const current = Array.isArray(form.travelerTypes) ? form.travelerTypes : [];
+        const next = current.includes(type)
+            ? current.filter((item) => item !== type)
+            : [...current, type];
+        set('travelerTypes', next);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSaving(true); setError('');
         try {
+            const parsedTags = (form.tagsText || '')
+                .split(',')
+                .map((item) => item.trim().toLowerCase())
+                .filter(Boolean);
+
+            if (!form.locationType) throw new Error('Please select location type (domestic/international).');
+            if (!form.durationDays || Number(form.durationDays) <= 0) throw new Error('Please enter duration in days.');
+            if (parsedTags.length === 0) throw new Error('Please add at least one tag.');
+            if (!Array.isArray(form.travelerTypes) || form.travelerTypes.length === 0) {
+                throw new Error('Please select at least one traveler type.');
+            }
+
             const payload = {
                 ...form,
                 slug: form.slug || slugify(form.title),
                 price: Number(form.price),
                 originalPrice: form.originalPrice ? Number(form.originalPrice) : undefined,
+                durationDays: form.durationDays ? Number(form.durationDays) : undefined,
                 slotsLeft: form.slotsLeft ? Number(form.slotsLeft) : undefined,
+                tags: parsedTags,
+                travelerTypes: Array.isArray(form.travelerTypes) ? form.travelerTypes : [],
                 images: form.images.filter(Boolean),
                 inclusions: form.inclusions.filter(Boolean),
                 exclusions: form.exclusions.filter(Boolean),
                 hotels: form.hotels.map((h) => ({ ...h, stars: Number(h.stars), amenities: h.amenities.filter(Boolean) })),
                 itinerary: form.itinerary.map((d, i) => ({ ...d, day: i + 1, activities: d.activities.filter(Boolean) })),
             };
+            delete payload.tagsText;
             const url = isEdit ? `${API_URL}/api/admin/packages/${packageId}` : `${API_URL}/api/admin/packages`;
             const method = isEdit ? 'PUT' : 'POST';
             const res = await fetch(url, {
@@ -108,7 +136,7 @@ export default function PackageForm({ initialData = null, packageId = null }) {
     return (
         <div className="space-y-6 max-w-4xl">
             {/* Header */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-start sm:items-center gap-3 sm:gap-4">
                 <Link href="/admin/packages" className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all">
                     <ArrowLeft className="w-5 h-5" />
                 </Link>
@@ -138,6 +166,14 @@ export default function PackageForm({ initialData = null, packageId = null }) {
                             </select>
                         </div>
                         <div>
+                            <label className="form-label">Location Type *</label>
+                            <select value={form.locationType} onChange={(e) => set('locationType', e.target.value)} className="form-input" required>
+                                <option value="">Select type</option>
+                                <option value="domestic">Domestic (India)</option>
+                                <option value="international">International</option>
+                            </select>
+                        </div>
+                        <div>
                             <label className="form-label">Price (₹) *</label>
                             <input type="number" value={form.price} onChange={(e) => set('price', e.target.value)} required placeholder="45000" className="form-input" />
                         </div>
@@ -148,6 +184,30 @@ export default function PackageForm({ initialData = null, packageId = null }) {
                         <div>
                             <label className="form-label">Duration *</label>
                             <input value={form.duration} onChange={(e) => set('duration', e.target.value)} required placeholder="7 Days / 6 Nights" className="form-input" />
+                        </div>
+                        <div>
+                            <label className="form-label">Duration (Days) *</label>
+                            <input type="number" min="1" value={form.durationDays} onChange={(e) => set('durationDays', e.target.value)} required placeholder="7" className="form-input" />
+                        </div>
+                        <div className="md:col-span-2">
+                            <label className="form-label">Tags * (comma separated)</label>
+                            <input value={form.tagsText} onChange={(e) => set('tagsText', e.target.value)} required placeholder="mountains, snowfall, luxury, adventure" className="form-input" />
+                        </div>
+                        <div className="md:col-span-2">
+                            <label className="form-label">Traveler Type *</label>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                {['couple', 'family', 'solo', 'friends'].map((type) => (
+                                    <label key={type} className="flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-2 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={form.travelerTypes.includes(type)}
+                                            onChange={() => toggleTravelerType(type)}
+                                            className="w-4 h-4 accent-emerald-600"
+                                        />
+                                        <span className="text-sm capitalize text-gray-700">{type}</span>
+                                    </label>
+                                ))}
+                            </div>
                         </div>
                         <div>
                             <label className="form-label">Location</label>
@@ -217,7 +277,7 @@ export default function PackageForm({ initialData = null, packageId = null }) {
                     <h2 className="font-bold text-gray-900 text-lg">Itinerary (Day-by-Day)</h2>
                     {form.itinerary.map((day, di) => (
                         <div key={di} className="border border-gray-200 rounded-2xl p-4 space-y-3">
-                            <div className="flex items-center gap-3">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                                 <div className="w-8 h-8 bg-emerald-600 text-white rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0">
                                     D{di + 1}
                                 </div>
@@ -260,12 +320,12 @@ export default function PackageForm({ initialData = null, packageId = null }) {
                     <h2 className="font-bold text-gray-900 text-lg">Hotels</h2>
                     {form.hotels.map((hotel, hi) => (
                         <div key={hi} className="border border-gray-200 rounded-2xl p-4 space-y-3">
-                            <div className="flex gap-2 items-center">
+                            <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
                                 <input value={hotel.name} onChange={(e) => updateHotel(hi, 'name', e.target.value)} placeholder="Hotel name" className="form-input flex-1 text-sm" />
-                                <select value={hotel.stars} onChange={(e) => updateHotel(hi, 'stars', e.target.value)} className="form-input w-28 text-sm">
+                                <select value={hotel.stars} onChange={(e) => updateHotel(hi, 'stars', e.target.value)} className="form-input w-full sm:w-28 text-sm">
                                     {[1, 2, 3, 4, 5].map((s) => <option key={s} value={s}>{s} ⭐</option>)}
                                 </select>
-                                <button type="button" onClick={() => removeArr('hotels', hi)} disabled={form.hotels.length === 1} className="p-2 text-gray-400 hover:text-red-500 disabled:opacity-30">
+                                <button type="button" onClick={() => removeArr('hotels', hi)} disabled={form.hotels.length === 1} className="p-2 text-gray-400 hover:text-red-500 disabled:opacity-30 self-end sm:self-auto">
                                     <X className="w-4 h-4" />
                                 </button>
                             </div>
@@ -322,11 +382,11 @@ export default function PackageForm({ initialData = null, packageId = null }) {
 
                 {/* Submit */}
                 {error && <p className="text-red-500 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm">⚠️ {error}</p>}
-                <div className="flex items-center gap-4 pb-8">
-                    <button type="submit" disabled={saving} className="btn-primary px-8 py-3.5 text-base">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 pb-8">
+                    <button type="submit" disabled={saving} className="btn-primary w-full sm:w-auto px-8 py-3.5 text-base">
                         {saving ? <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</> : <><Save className="w-5 h-5" /> {isEdit ? 'Update Package' : 'Create Package'}</>}
                     </button>
-                    <Link href="/admin/packages" className="btn-outline py-3.5 px-6">Cancel</Link>
+                    <Link href="/admin/packages" className="btn-outline w-full sm:w-auto py-3.5 px-6 text-center">Cancel</Link>
                 </div>
             </form>
         </div>

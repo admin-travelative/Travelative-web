@@ -17,21 +17,21 @@ export default function CTABanner() {
                     viewport={{ once: true }}
                 >
                     <Sparkles className="w-12 h-12 text-emerald-300 mx-auto mb-4" />
-                    <h2 className="text-4xl md:text-5xl font-serif font-bold mb-4">
+                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold mb-4">
                         Your Perfect Trip is Waiting
                     </h2>
-                    <p className="text-xl text-emerald-100 mb-8 max-w-2xl mx-auto">
+                    <p className="text-base sm:text-lg md:text-xl text-emerald-100 mb-8 max-w-2xl mx-auto">
                         Let our travel experts craft a personalized itinerary just for you. Free consultation, no commitments.
                     </p>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <Link href="/packages" className="btn-white text-base px-8 py-4">
+                        <Link href="/packages" className="btn-white w-full sm:w-auto text-sm sm:text-base px-6 sm:px-8 py-3.5 sm:py-4">
                             Explore All Packages <ArrowRight className="w-5 h-5" />
                         </Link>
                         <a
                             href="https://wa.me/91XXXXXXXXXX?text=Hi! I'd like a free travel consultation."
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-8 py-4 border-2 border-white/40 hover:border-white/80 text-white font-semibold rounded-full transition-all duration-300"
+                            className="inline-flex items-center justify-center w-full sm:w-auto gap-2 px-6 sm:px-8 py-3.5 sm:py-4 border-2 border-white/40 hover:border-white/80 text-white font-semibold rounded-full transition-all duration-300"
                         >
                             Free Consultation
                         </a>

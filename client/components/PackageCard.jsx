@@ -1,15 +1,70 @@
 'use client';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Clock, MapPin, Star, TrendingUp, AlertCircle, ArrowRight } from 'lucide-react';
+import { Clock, MapPin, Star, TrendingUp, AlertCircle, ArrowRight, Cloud, CloudRain, Snowflake, Sun, Wind } from 'lucide-react';
+import { getCachedWeather } from '@/lib/weather';
 
 function formatPrice(price) {
     return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price);
 }
 
+function getDisplayVibe(pkg) {
+    const tags = Array.isArray(pkg?.tags) ? pkg.tags.map((tag) => String(tag).toLowerCase()) : [];
+    const category = String(pkg?.category || '').toLowerCase();
+
+    if (tags.includes('snowfall') || tags.includes('snow') || tags.includes('winter')) return 'Snow Escape';
+    if (tags.includes('beaches') || tags.includes('beach') || tags.includes('island')) return 'Island Escape';
+    if (tags.includes('heritage') || tags.includes('culture') || tags.includes('history')) return 'Cultural Journey';
+    if (tags.includes('wildlife') || tags.includes('nature') || tags.includes('mountains')) return 'Nature Escape';
+    if (tags.includes('adventure') || category === 'adventure') return 'Adventure Vibe';
+    if (tags.includes('luxury') || tags.includes('relax') || category === 'relax') return 'Premium Getaway';
+    if (category === 'honeymoon') return 'Romantic Escape';
+    if (category === 'family') return 'Scenic Escape';
+    return 'Travel Vibe';
+}
+
 export default function PackageCard({ pkg, index = 0 }) {
+    const [weatherState, setWeatherState] = useState(null);
+
     const image = pkg.images?.[0] || 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800';
     const discount = pkg.originalPrice ? Math.round(((pkg.originalPrice - pkg.price) / pkg.originalPrice) * 100) : null;
+    const displayVibe = getDisplayVibe(pkg);
+    const hasLocation = Boolean(pkg?.location || pkg?.country);
+    const locationKey = `${pkg?.location || ''}|${pkg?.country || ''}`;
+
+    useEffect(() => {
+        let mounted = true;
+
+        if (!hasLocation) {
+            return () => {
+                mounted = false;
+            };
+        }
+
+        getCachedWeather(pkg.location, pkg.country)
+            .then((data) => {
+                if (!mounted) return;
+                setWeatherState({ key: locationKey, data: data || null });
+            });
+
+        return () => {
+            mounted = false;
+        };
+    }, [hasLocation, locationKey, pkg?.location, pkg?.country]);
+
+    const weather = weatherState?.key === locationKey ? weatherState.data : null;
+    const weatherLoading = hasLocation && weatherState?.key !== locationKey;
+
+    const WeatherIcon = weather?.icon === 'sunny'
+        ? Sun
+        : weather?.icon === 'windy'
+            ? Wind
+            : weather?.icon === 'snowy'
+                ? Snowflake
+                : weather?.icon === 'rainy'
+                    ? CloudRain
+                    : Cloud;
 
     return (
         <motion.div
@@ -54,8 +109,30 @@ export default function PackageCard({ pkg, index = 0 }) {
                     {/* Category tag */}
                     <div className="absolute bottom-3 right-3">
                         <span className="bg-white/90 text-gray-700 text-xs font-bold px-3 py-1 rounded-full">
-                            {pkg.category}
+                            {displayVibe}
                         </span>
+                    </div>
+
+                    {/* Weather badge */}
+                    <div className="absolute bottom-3 left-3">
+                        {weather ? (
+                            <span className="inline-flex items-center gap-1.5 bg-black/55 text-white text-xs font-semibold px-3 py-1 rounded-full backdrop-blur-sm border border-white/20">
+                                <span className="relative inline-flex w-2.5 h-2.5">
+                                    <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-70 animate-ping" />
+                                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400 animate-pulse" />
+                                </span>
+                                <WeatherIcon className="w-3.5 h-3.5" />
+                                <span>
+                                    {weather.condition}
+                                    {Number.isFinite(weather.temperature) ? ` ${weather.temperature}\u00B0C` : ''}
+                                </span>
+                            </span>
+                        ) : weatherLoading ? (
+                            <span className="inline-flex items-center gap-1.5 bg-black/45 text-white/80 text-xs font-medium px-3 py-1 rounded-full backdrop-blur-sm border border-white/10">
+                                <Cloud className="w-3.5 h-3.5 animate-pulse" />
+                                <span>Weather...</span>
+                            </span>
+                        ) : null}
                     </div>
                 </div>
 

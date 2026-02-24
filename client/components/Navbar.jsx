@@ -36,10 +36,10 @@ export default function Navbar() {
             transition={{ duration: 0.6, ease: 'easeOut' }}
         >
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex items-center justify-between h-20 py-4 relative">
+                <div className="flex items-center justify-between h-16 sm:h-20 md:h-20 py-1 sm:py-2 relative">
                     {/* Logo */}
                     <Link href="/" className="flex items-center group z-10 transition-transform duration-300 hover:scale-105">
-                        <img src="/Travelative_logo.png" alt="Travelative" className="h-16 md:h-20 w-auto object-contain" />
+                        <img src="/Travelative_logo.png" alt="Travelative" className="h-7 sm:h-8 md:h-9 lg:h-10 w-auto object-contain" />
                     </Link>
 
                     {/* Desktop Nav - Centered perfectly */}

@@ -50,7 +50,7 @@ export default function AdminEnquiriesPage() {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-serif font-bold text-gray-900">Enquiries</h1>
                     <p className="text-gray-500 text-sm">{counts.new} new enquiries awaiting response</p>
@@ -61,7 +61,7 @@ export default function AdminEnquiriesPage() {
             </div>
 
             {/* Filter Tabs */}
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
                 {[
                     { key: 'all', label: 'All' },
                     { key: 'new', label: '🔴 New' },

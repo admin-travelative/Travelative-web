@@ -47,18 +47,18 @@ export default function AdminPackagesPage() {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-serif font-bold text-gray-900">Packages</h1>
                     <p className="text-gray-500 text-sm">{packages.length} total packages</p>
                 </div>
-                <Link href="/admin/packages/new" className="btn-primary text-sm py-2.5 px-5">
+                <Link href="/admin/packages/new" className="btn-primary w-full sm:w-auto text-sm py-2.5 px-5">
                     <Plus className="w-4 h-4" /> Add Package
                 </Link>
             </div>
 
             {/* Search */}
-            <div className="relative max-w-xs">
+            <div className="relative w-full sm:max-w-xs">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                     value={search}

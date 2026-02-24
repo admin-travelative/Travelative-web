@@ -12,7 +12,7 @@ const moods = [
 
 export default function MoodFilter({ activeFilter, onFilterChange }) {
     return (
-        <div className="flex flex-wrap items-center justify-center gap-3">
+        <div className="flex items-center sm:justify-center gap-2 sm:gap-3 overflow-x-auto sm:overflow-visible scrollbar-hide py-1">
             {moods.map((mood) => {
                 const Icon = mood.icon;
                 const isActive = activeFilter === mood.id;
@@ -22,7 +22,7 @@ export default function MoodFilter({ activeFilter, onFilterChange }) {
                         onClick={() => onFilterChange(mood.id)}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold text-sm transition-all duration-300 border-2 ${isActive
+                        className={`flex items-center gap-2 flex-shrink-0 whitespace-nowrap px-4 sm:px-5 py-2 sm:py-2.5 rounded-full font-semibold text-xs sm:text-sm transition-all duration-300 border-2 ${isActive
                                 ? `${mood.color} border-transparent shadow-lg`
                                 : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:shadow-md'
                             }`}

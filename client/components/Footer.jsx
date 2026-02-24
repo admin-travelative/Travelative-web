@@ -33,8 +33,8 @@ export default function Footer() {
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
                     {/* Brand Column */}
                     <div className="lg:col-span-2">
-                        <Link href="/" className="flex items-center mb-6 transition-transform duration-300 hover:scale-105 origin-left">
-                            <img src="/Travelative_logo.png" alt="Travelative" className="h-20 w-auto object-contain" />
+                        <Link href="/" className="inline-flex items-center mb-6 p-2 sm:p-2.5 bg-white rounded-2xl shadow-md transition-transform duration-300 hover:scale-105 origin-left">
+                            <img src="/Travelative_logo.png" alt="Travelative" className="h-14 sm:h-16 md:h-20 w-auto object-contain" />
                         </Link>
                         <p className="text-gray-400 leading-relaxed mb-6 max-w-sm">
                             We craft premium travel experiences that turn your dream vacations into unforgettable realities.
@@ -101,7 +101,7 @@ export default function Footer() {
             {/* Bottom Bar */}
             <div className="border-t border-gray-800">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
-                    <p className="text-gray-500 text-sm flex items-center gap-4">
+                    <p className="text-gray-500 text-sm flex flex-col sm:flex-row items-center gap-1 sm:gap-4 text-center sm:text-left">
                         <span>© {new Date().getFullYear()} Travelative. All rights reserved.</span>
                         <Link href="/admin/login" className="hover:text-emerald-500 transition-colors duration-200">
                             Admin Portal

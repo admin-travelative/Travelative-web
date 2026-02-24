@@ -48,8 +48,10 @@ router.post('/packages', auth, async (req, res) => {
 // PUT /api/admin/packages/:id
 router.put('/packages/:id', auth, async (req, res) => {
     try {
-        const pkg = await Package.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+        const pkg = await Package.findById(req.params.id);
         if (!pkg) return res.status(404).json({ message: 'Package not found' });
+        Object.assign(pkg, req.body);
+        await pkg.save();
         res.json(pkg);
     } catch (err) {
         res.status(400).json({ message: 'Validation error', error: err.message });

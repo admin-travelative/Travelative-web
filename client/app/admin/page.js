@@ -57,12 +57,12 @@ export default function AdminDashboard() {
     return (
         <div className="space-y-8">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-serif font-bold text-gray-900">Dashboard</h1>
                     <p className="text-gray-500 text-sm mt-1">Welcome back! Here's what's happening.</p>
                 </div>
-                <Link href="/admin/packages/new" className="btn-primary text-sm py-2.5 px-5">
+                <Link href="/admin/packages/new" className="btn-primary w-full sm:w-auto text-sm py-2.5 px-5">
                     <Plus className="w-4 h-4" /> Add Package
                 </Link>
             </div>

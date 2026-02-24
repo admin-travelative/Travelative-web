@@ -51,11 +51,11 @@ export default function PackagesPage() {
                     <motion.h1
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-5xl md:text-6xl font-serif font-bold mb-4"
+                        className="text-3xl sm:text-4xl md:text-6xl font-serif font-bold mb-4"
                     >
                         All Travel <span className="italic text-emerald-300">Packages</span>
                     </motion.h1>
-                    <p className="text-xl text-white/80">Discover handcrafted journeys to the world's most breathtaking destinations.</p>
+                    <p className="text-base sm:text-lg md:text-xl text-white/80">Discover handcrafted journeys to the world's most breathtaking destinations.</p>
                 </div>
             </section>
 
@@ -63,13 +63,13 @@ export default function PackagesPage() {
             <div className="bg-white border-b border-gray-200 shadow-sm py-3 relative z-10">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Domestic / International Toggle (Main Filter) */}
-                    <div className="flex justify-center mb-3">
-                        <div className="inline-flex bg-gray-100 p-1.5 rounded-full">
+                    <div className="mb-3 -mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto scrollbar-hide">
+                        <div className="inline-flex min-w-max bg-gray-100 p-1.5 rounded-full mx-auto">
                             {['all', 'domestic', 'international'].map((type) => (
                                 <button
                                     key={type}
                                     onClick={() => setDestinationType(type)}
-                                    className={`relative px-6 py-2 text-sm font-bold rounded-full transition-colors ${destinationType === type ? 'text-white' : 'text-gray-600 hover:text-gray-900'
+                                    className={`relative px-4 sm:px-6 py-2 text-xs sm:text-sm font-bold rounded-full transition-colors whitespace-nowrap ${destinationType === type ? 'text-white' : 'text-gray-600 hover:text-gray-900'
                                         }`}
                                 >
                                     {destinationType === type && (
@@ -87,9 +87,9 @@ export default function PackagesPage() {
                     </div>
 
                     {/* Single Row Horizontal Scroll for Filters */}
-                    <div className="flex items-center gap-4 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 pb-2">
                         {/* Search */}
-                        <div className="relative flex-shrink-0 w-64">
+                        <div className="relative w-full sm:w-64 sm:flex-shrink-0">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                             <input
                                 value={search}
@@ -99,16 +99,16 @@ export default function PackagesPage() {
                             />
                         </div>
                         {/* Mood Filter */}
-                        <div className="flex-shrink-0">
+                        <div className="w-full sm:flex-1">
                             <MoodFilter activeFilter={activeFilter} onFilterChange={setActiveFilter} />
                         </div>
                         {/* Sort */}
-                        <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
+                        <div className="flex items-center gap-2 sm:flex-shrink-0 sm:ml-auto">
                             <SlidersHorizontal className="w-4 h-4 text-gray-500 hidden sm:block" />
                             <select
                                 value={sortBy}
                                 onChange={(e) => setSortBy(e.target.value)}
-                                className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-gray-700 font-medium cursor-pointer"
+                                className="w-full sm:w-auto bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-gray-700 font-medium cursor-pointer"
                             >
                                 <option value="default">Sort: Default</option>
                                 <option value="price-asc">Price: Low to High</option>
@@ -139,7 +139,7 @@ export default function PackagesPage() {
                         </div>
                     ) : filtered.length > 0 ? (
                         <>
-                            <div className="flex justify-between items-end mb-6">
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-2 mb-6">
                                 <h2 className="text-xl font-bold text-gray-900">
                                     {destinationType === 'domestic' ? 'Explore India' : destinationType === 'international' ? 'Global Getaways' : 'All Packages'}
                                 </h2>
