@@ -116,34 +116,37 @@ export default function PackageForm({ initialData = null, packageId = null }) {
         }
     };
 
-    const aiPromptText = `Extract package details from the provided image and format them EXACTLY as a JSON object below. Follow these rules strictly:
-1. ONLY fill fields explicitly mentioned or logically inferred from the image content. Do NOT make up info.
-2. DO NOT include image URLs or fake data for images.
-3. Only include 'price', 'days' (Number), and 'nights' (Number) if they are present on the card.
-4. Set 'locationType' to exactly "domestic" (if in India) or "international".
-5. Generate 'tags' (array) for SEO based on the image vibe.
-6. Generate 'category' (choose exactly one: Adventure, Relax, Honeymoon, Family).
-7. Generate a 'shortDescription' (1 line) and a 'description' (detailed, SEO friendly, based on the tour).
-8. List 'travelerTypes' (array: subset of ["couple", "family", "solo", "friends"]) based on what the tour suits best.
-9. Set 'rating' (e.g., 4.5).
-10. Output ONLY valid JSON, no markdown blocks, no extra text.
+    const aiPromptText = `Extract package details from the provided image and format them EXACTLY as a JSON array of objects below. Follow these rules strictly:
+1. If the image contains multiple packages, extract EACH one as a separate object in the array. If it's just one package, return an array with one object.
+2. ONLY fill fields explicitly mentioned or logically inferred. Do NOT make up info.
+3. DO NOT include image URLs or fake data for images.
+4. Only include 'price', 'days' (Number), and 'nights' (Number) if present.
+5. Set 'locationType' to exactly "domestic" (if in India) or "international".
+6. Generate 'tags' (array) for SEO based on the destination vibe.
+7. Generate 'category' (choose exactly one: Adventure, Relax, Honeymoon, Family).
+8. Generate a 'shortDescription' (1 line) and a 'description' (detailed, SEO friendly).
+9. List 'travelerTypes' (array: subset of ["couple", "family", "solo", "friends"]).
+10. Set 'rating' (e.g., 4.5).
+11. Output ONLY valid JSON, no markdown blocks, no extra text.
 
 JSON Format:
-{
-  "title": "String",
-  "price": Number,
-  "days": Number,
-  "nights": Number,
-  "locationType": "domestic",
-  "location": "String (e.g. Haridwar, Kedarnath, Badrinath)",
-  "country": "String",
-  "category": "String",
-  "tags": ["tag1", "tag2"],
-  "travelerTypes": ["family", "couple"],
-  "rating": 4.5,
-  "shortDescription": "String",
-  "description": "String"
-}`;
+[
+  {
+    "title": "String",
+    "price": Number,
+    "days": Number,
+    "nights": Number,
+    "locationType": "domestic",
+    "location": "String (e.g. Haridwar, Kedarnath)",
+    "country": "String",
+    "category": "String",
+    "tags": ["tag1", "tag2"],
+    "travelerTypes": ["family", "couple"],
+    "rating": 4.5,
+    "shortDescription": "String",
+    "description": "String"
+  }
+]`;
 
     const handleCopyPrompt = async () => {
         try {
@@ -169,7 +172,17 @@ JSON Format:
             if (cleanJson.startsWith('\`\`\`')) cleanJson = cleanJson.substring(3);
             if (cleanJson.endsWith('\`\`\`')) cleanJson = cleanJson.substring(0, cleanJson.length - 3);
 
-            const parsed = JSON.parse(cleanJson.trim());
+            const parsedData = JSON.parse(cleanJson.trim());
+
+            // Handle array if AI returns multiple packages from a master flyer
+            let parsed = parsedData;
+            if (Array.isArray(parsedData)) {
+                if (parsedData.length === 0) throw new Error("Empty array returned.");
+                parsed = parsedData[0]; // Take the first package for the current form
+                if (parsedData.length > 1) {
+                    alert(`Note: The AI detected ${parsedData.length} packages in the image. We have autofilled the FIRST one (${parsed.title || 'Untitled'}). You can keep the JSON copied to easily paste and create the others!`);
+                }
+            }
 
             setForm(prev => ({
                 ...prev,
