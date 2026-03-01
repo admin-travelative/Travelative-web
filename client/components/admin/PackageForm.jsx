@@ -478,7 +478,7 @@ JSON Format:
                     <div className="flex flex-wrap gap-4 mb-4">
                         {form.images.filter(Boolean).map((img, i) => (
                             <div key={i} className="relative group w-32 h-32 rounded-xl overflow-hidden border border-gray-200">
-                                <img src={img.startsWith('http') ? img : `${API_URL}${img}`} alt={`Upload ${i + 1}`} className="w-full h-full object-cover" />
+                                <img src={img.startsWith('http') || img.startsWith('data:') ? img : `${API_URL}${img}`} alt={`Upload ${i + 1}`} className="w-full h-full object-cover" />
                                 <button type="button" onClick={() => removeArr('images', form.images.indexOf(img))}
                                     className="absolute top-2 right-2 p-1.5 bg-white/90 text-red-500 hover:bg-red-500 hover:text-white rounded-lg shadow-sm transition-all opacity-0 group-hover:opacity-100">
                                     <X className="w-4 h-4" />
