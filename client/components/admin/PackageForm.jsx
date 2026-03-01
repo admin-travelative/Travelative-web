@@ -172,10 +172,14 @@ JSON Format:
             if (cleanJson.startsWith('\`\`\`')) cleanJson = cleanJson.substring(3);
             if (cleanJson.endsWith('\`\`\`')) cleanJson = cleanJson.substring(0, cleanJson.length - 3);
 
-            const parsedData = JSON.parse(cleanJson.trim());
+            let parsedData = JSON.parse(cleanJson.trim());
 
-            // If it's an array with multiple packages, bulk upload them automatically
-            if (Array.isArray(parsedData) && parsedData.length > 0) {
+            // Always treat the input as an array to trigger the bulk UI
+            if (!Array.isArray(parsedData)) {
+                parsedData = [parsedData];
+            }
+
+            if (parsedData.length > 0) {
                 setShowAutoFill(false);
                 setBulkUpload({ active: true, current: 0, total: parsedData.length, title: 'Initializing...' });
 
@@ -222,31 +226,9 @@ JSON Format:
 
                 setBulkUpload({ active: false, current: 0, total: 0, title: '' });
                 router.push('/admin/packages');
-                return;
+            } else {
+                setAutoFillError("No package data found in JSON.");
             }
-
-            // Fallback for an object
-            const parsed = Array.isArray(parsedData) ? parsedData[0] : parsedData;
-
-            setForm(prev => ({
-                ...prev,
-                title: parsed.title || prev.title,
-                slug: parsed.title ? slugify(parsed.title) : prev.slug,
-                price: parsed.price || prev.price,
-                days: parsed.days || prev.days,
-                nights: parsed.nights || prev.nights,
-                locationType: parsed.locationType || prev.locationType,
-                location: parsed.location || prev.location,
-                country: parsed.country || prev.country,
-                category: parsed.category || prev.category,
-                tagsText: Array.isArray(parsed.tags) ? parsed.tags.join(', ') : prev.tagsText,
-                travelerTypes: Array.isArray(parsed.travelerTypes) ? parsed.travelerTypes : prev.travelerTypes,
-                rating: parsed.rating || prev.rating,
-                shortDescription: parsed.shortDescription || prev.shortDescription,
-                description: parsed.description || prev.description,
-            }));
-
-            setShowAutoFill(false);
             setAutoFillJson('');
         } catch (err) {
             setAutoFillError('Invalid JSON format. Please ensure you copied exactly what the AI returned.');
