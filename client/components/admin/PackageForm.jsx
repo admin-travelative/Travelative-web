@@ -22,6 +22,7 @@ export default function PackageForm({ initialData = null, packageId = null }) {
     const [autoFillJson, setAutoFillJson] = useState('');
     const [copiedPrompt, setCopiedPrompt] = useState(false);
     const [autoFillError, setAutoFillError] = useState('');
+    const [bulkUpload, setBulkUpload] = useState({ active: false, current: 0, total: 0, title: '' });
 
     const initNights = initialData?.duration ? (initialData.duration.match(/(\d+)\s*night/i)?.[1] || '') : '';
     const initDays = initialData?.durationDays || (initialData?.duration ? (initialData.duration.match(/(\d+)\s*day/i)?.[1] || '') : '');
@@ -174,15 +175,59 @@ JSON Format:
 
             const parsedData = JSON.parse(cleanJson.trim());
 
-            // Handle array if AI returns multiple packages from a master flyer
-            let parsed = parsedData;
-            if (Array.isArray(parsedData)) {
-                if (parsedData.length === 0) throw new Error("Empty array returned.");
-                parsed = parsedData[0]; // Take the first package for the current form
-                if (parsedData.length > 1) {
-                    alert(`Note: The AI detected ${parsedData.length} packages in the image. We have autofilled the FIRST one (${parsed.title || 'Untitled'}). You can keep the JSON copied to easily paste and create the others!`);
+            // If it's an array with multiple packages, bulk upload them automatically
+            if (Array.isArray(parsedData) && parsedData.length > 0) {
+                setShowAutoFill(false);
+                setBulkUpload({ active: true, current: 0, total: parsedData.length, title: 'Initializing...' });
+
+                let successCount = 0;
+                for (let i = 0; i < parsedData.length; i++) {
+                    const aiPkg = parsedData[i];
+                    setBulkUpload({ active: true, current: i + 1, total: parsedData.length, title: aiPkg.title || `Package ${i + 1}` });
+
+                    try {
+                        const parsedTags = Array.isArray(aiPkg.tags) ? aiPkg.tags.map(t => String(t).trim().toLowerCase()).filter(Boolean) : [];
+                        const payload = {
+                            title: aiPkg.title || `Package ${i + 1}`,
+                            slug: slugify(aiPkg.title || `pkg-${Date.now()}-${i}`),
+                            price: Number(aiPkg.price) || 0,
+                            category: aiPkg.category || 'Adventure',
+                            locationType: aiPkg.locationType === 'international' ? 'international' : 'domestic',
+                            location: aiPkg.location || '',
+                            country: aiPkg.country || '',
+                            duration: `${aiPkg.nights || 0} Nights / ${aiPkg.days || 0} Days`,
+                            durationDays: Number(aiPkg.days) || 0,
+                            tags: parsedTags.length > 0 ? parsedTags : ['travel'],
+                            travelerTypes: Array.isArray(aiPkg.travelerTypes) && aiPkg.travelerTypes.length > 0 ? aiPkg.travelerTypes : ['family'],
+                            rating: Number(aiPkg.rating) || 4.5,
+                            shortDescription: aiPkg.shortDescription || '',
+                            description: aiPkg.description || '',
+                            images: [],
+                            inclusions: [],
+                            exclusions: [],
+                            hotels: [],
+                            itinerary: []
+                        };
+
+                        const res = await fetch(`${API_URL}/api/admin/packages`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+                            body: JSON.stringify(payload),
+                        });
+
+                        if (res.ok) successCount++;
+                    } catch (err) {
+                        console.error('Error saving package:', err);
+                    }
                 }
+
+                setBulkUpload({ active: false, current: 0, total: 0, title: '' });
+                router.push('/admin/packages');
+                return;
             }
+
+            // Fallback for an object
+            const parsed = Array.isArray(parsedData) ? parsedData[0] : parsedData;
 
             setForm(prev => ({
                 ...prev,
@@ -601,6 +646,40 @@ JSON Format:
                     </div>
                 )}
             </AnimatePresence>
-        </div>
+
+            {/* Bulk Upload Progress Modal */}
+            <AnimatePresence>
+                {bulkUpload.active && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                            className="bg-white rounded-3xl shadow-xl w-full max-w-sm overflow-hidden"
+                        >
+                            <div className="p-8 flex flex-col items-center justify-center text-center space-y-4">
+                                <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mb-2">
+                                    <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+                                </div>
+                                <div className="w-full">
+                                    <h3 className="font-bold text-gray-900 text-xl mb-1">Creating Packages</h3>
+                                    <p className="text-gray-500 text-sm mb-4">Saving {bulkUpload.current} of {bulkUpload.total}</p>
+
+                                    <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden mb-3">
+                                        <div
+                                            className="bg-gradient-to-r from-indigo-500 to-purple-600 h-2.5 rounded-full transition-all duration-300 ease-out"
+                                            style={{ width: `${(bulkUpload.current / bulkUpload.total) * 100}%` }}
+                                        ></div>
+                                    </div>
+                                    <p className="text-sm font-semibold text-indigo-700 truncate px-2">
+                                        Processing: {bulkUpload.title}
+                                    </p>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+        </div >
     );
 }
