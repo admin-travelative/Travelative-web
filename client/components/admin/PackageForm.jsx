@@ -101,9 +101,9 @@ export default function PackageForm({ initialData = null, packageId = null }) {
                     let width = img.width;
                     let height = img.height;
 
-                    // Max dimensions to shrink down huge photos
-                    const MAX_WIDTH = 1200;
-                    const MAX_HEIGHT = 1200;
+                    // Max dimensions to shrink down huge photos (1920x1920 for high quality Web)
+                    const MAX_WIDTH = 1920;
+                    const MAX_HEIGHT = 1920;
                     if (width > height) {
                         if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
                     } else {
@@ -113,14 +113,17 @@ export default function PackageForm({ initialData = null, packageId = null }) {
                     canvas.width = width;
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
+                    // Enable high quality image smoothing
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
                     ctx.drawImage(img, 0, 0, width, height);
 
-                    // Compress to JPEG incrementally to hit target < 500kb
-                    let quality = 0.9;
+                    // Compress to JPEG incrementally to hit target < 1.5MB for better clarity
+                    let quality = 0.95;
                     let base64 = canvas.toDataURL('image/jpeg', quality);
 
-                    // 500kb is ~ 682,000 characters in base64 (500 * 1024 * 1.33)
-                    while (base64.length > 680000 && quality > 0.1) {
+                    // 1.5MB is ~ 2,000,000 characters in base64
+                    while (base64.length > 2000000 && quality > 0.3) {
                         quality -= 0.1;
                         base64 = canvas.toDataURL('image/jpeg', quality);
                     }
