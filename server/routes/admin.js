@@ -6,51 +6,16 @@ const Admin = require('../models/Admin');
 const Package = require('../models/Package');
 const Enquiry = require('../models/Enquiry');
 const auth = require('../middleware/auth');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-
-const uploadDir = path.join(__dirname, '../public/uploads');
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// Configure multer for local file uploads
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, uploadDir)
-    },
-    filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-        cb(null, 'img-' + uniqueSuffix + path.extname(file.originalname))
-    }
-});
-const upload = multer({ storage: storage });
-
-// POST /api/admin/login
-router.post('/login', async (req, res) => {
+// POST /api/admin/upload - Receive Base64 image and echo it back for MongoDB storage
+router.post('/upload', auth, (req, res) => {
     try {
-        const { username, password } = req.body;
-        const admin = await Admin.findOne({ username });
-        if (!admin) return res.status(401).json({ message: 'Invalid credentials' });
-        const isMatch = await admin.comparePassword(password);
-        if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
-        const token = jwt.sign({ id: admin._id, username: admin.username, role: admin.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        res.json({ token, admin: { username: admin.username, role: admin.role } });
-    } catch (err) {
-        res.status(500).json({ message: 'Server error', error: err.message });
-    }
-});
+        const { image } = req.body;
+        if (!image) return res.status(400).json({ message: 'No image data provided' });
 
-// POST /api/admin/upload - Upload a package image
-router.post('/upload', auth, upload.single('image'), (req, res) => {
-    try {
-        if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
-        // Return relative path from server root (will be fetched via /uploads/...)
-        const fileUrl = `/uploads/${req.file.filename}`;
-        res.json({ url: fileUrl });
+        // Return the base64 string to be stored directly in MongoDB
+        res.json({ url: image });
     } catch (err) {
-        res.status(500).json({ message: 'Error uploading file', error: err.message });
+        res.status(500).json({ message: 'Error processing image', error: err.message });
     }
 });
 

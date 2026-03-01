@@ -89,20 +89,66 @@ export default function PackageForm({ initialData = null, packageId = null }) {
         set('itinerary', itinerary);
     };
 
+    const compressImage = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    // Max dimensions to shrink down huge photos
+                    const MAX_WIDTH = 1200;
+                    const MAX_HEIGHT = 1200;
+                    if (width > height) {
+                        if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                    } else {
+                        if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Compress to JPEG incrementally to hit target < 500kb
+                    let quality = 0.9;
+                    let base64 = canvas.toDataURL('image/jpeg', quality);
+
+                    // 500kb is ~ 682,000 characters in base64 (500 * 1024 * 1.33)
+                    while (base64.length > 680000 && quality > 0.1) {
+                        quality -= 0.1;
+                        base64 = canvas.toDataURL('image/jpeg', quality);
+                    }
+                    resolve(base64);
+                };
+                img.onerror = (err) => reject(err);
+            };
+            reader.onerror = (err) => reject(err);
+        });
+    };
+
     const handleImageUpload = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        const formData = new FormData();
-        formData.append('image', file);
-
         try {
             setSaving(true);
+            const compressedBase64 = await compressImage(file);
+
             const res = await fetch(`${API_URL}/api/admin/upload`, {
                 method: 'POST',
-                headers: { Authorization: `Bearer ${getToken()}` },
-                body: formData
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${getToken()}`
+                },
+                body: JSON.stringify({ image: compressedBase64 })
             });
+
             if (!res.ok) throw new Error('Failed to upload image');
             const data = await res.json();
 

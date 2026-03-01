@@ -14,7 +14,7 @@ app.use(cors({
     },
     credentials: true
 }));
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '50mb' }));
 
 // Serve static files from public config (mainly for user uploaded images)
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
