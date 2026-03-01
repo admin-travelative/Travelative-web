@@ -158,8 +158,7 @@ JSON Format:
             console.error('Failed to copy', err);
         }
     };
-
-    const applyAutoFill = () => {
+    const applyAutoFill = async () => {
         try {
             setAutoFillError('');
             if (!autoFillJson.trim()) {
