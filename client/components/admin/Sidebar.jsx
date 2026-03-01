@@ -28,12 +28,9 @@ export default function Sidebar() {
         <div className="flex flex-col h-full">
             {/* Logo */}
             <div className="p-6 border-b border-gray-100">
-                <Link href="/admin" className="flex items-center gap-3 group">
-                    <img src="/Travelative_logo.png" alt="Travelative" className="h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105 origin-left" />
-                    <div className="flex flex-col">
-                        <span className="font-serif font-bold text-gray-900 text-lg leading-tight transition-colors group-hover:text-emerald-700">Travelative</span>
-                        <span className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest">Admin Panel</span>
-                    </div>
+                <Link href="/admin" className="flex flex-col items-start gap-1 group">
+                    <img src="/Travelative_logo.png" alt="Travelative" className="h-10 sm:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105 origin-left" />
+                    <span className="text-[11px] text-orange-600 font-bold uppercase tracking-widest ml-1 mt-1 transition-colors group-hover:text-orange-700">Admin Panel</span>
                 </Link>
             </div>
 
@@ -48,13 +45,13 @@ export default function Sidebar() {
                             href={href}
                             onClick={() => setMobileOpen(false)}
                             className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 group ${isActive
-                                ? 'bg-emerald-50 text-emerald-700'
+                                ? 'bg-orange-50 text-orange-700'
                                 : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                                 }`}
                         >
-                            <Icon className={`w-5 h-5 ${isActive ? 'text-emerald-600' : 'text-gray-400 group-hover:text-gray-600'}`} />
+                            <Icon className={`w-5 h-5 ${isActive ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'}`} />
                             {label}
-                            {isActive && <ChevronRight className="w-4 h-4 ml-auto text-emerald-500" />}
+                            {isActive && <ChevronRight className="w-4 h-4 ml-auto text-orange-500" />}
                         </Link>
                     );
                 })}

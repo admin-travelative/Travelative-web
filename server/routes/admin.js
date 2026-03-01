@@ -6,6 +6,20 @@ const Admin = require('../models/Admin');
 const Package = require('../models/Package');
 const Enquiry = require('../models/Enquiry');
 const auth = require('../middleware/auth');
+const multer = require('multer');
+const path = require('path');
+
+// Configure multer for local file uploads
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'public/uploads')
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+        cb(null, 'img-' + uniqueSuffix + path.extname(file.originalname))
+    }
+});
+const upload = multer({ storage: storage });
 
 // POST /api/admin/login
 router.post('/login', async (req, res) => {
@@ -19,6 +33,18 @@ router.post('/login', async (req, res) => {
         res.json({ token, admin: { username: admin.username, role: admin.role } });
     } catch (err) {
         res.status(500).json({ message: 'Server error', error: err.message });
+    }
+});
+
+// POST /api/admin/upload - Upload a package image
+router.post('/upload', auth, upload.single('image'), (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+        // Return relative path from server root (will be fetched via /uploads/...)
+        const fileUrl = `/uploads/${req.file.filename}`;
+        res.json({ url: fileUrl });
+    } catch (err) {
+        res.status(500).json({ message: 'Error uploading file', error: err.message });
     }
 });
 

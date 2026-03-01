@@ -43,7 +43,7 @@ export default function PackageDetailPage({ params }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
     const [activeImage, setActiveImage] = useState(0);
-    const [activeTab, setActiveTab] = useState('itinerary');
+    const [activeTab, setActiveTab] = useState('inclusions');
     const [showForm, setShowForm] = useState(false);
     const [weatherState, setWeatherState] = useState(null);
     const [shareStatus, setShareStatus] = useState('');
@@ -72,6 +72,16 @@ export default function PackageDetailPage({ params }) {
             mounted = false;
         };
     }, [pkg?.location, pkg?.country]);
+
+    useEffect(() => {
+        if (pkg) {
+            const hasItinerary = pkg.itinerary && pkg.itinerary.length > 0;
+            const hasHotels = pkg.hotels && pkg.hotels.length > 0;
+            if (hasItinerary) setActiveTab('itinerary');
+            else if (hasHotels) setActiveTab('hotels');
+            else setActiveTab('inclusions');
+        }
+    }, [pkg]);
 
     useEffect(() => () => {
         if (shareStatusTimeoutRef.current) clearTimeout(shareStatusTimeoutRef.current);
@@ -224,7 +234,11 @@ export default function PackageDetailPage({ params }) {
                             {/* Tabs */}
                             <div>
                                 <div className="flex gap-1 border-b border-gray-200 mb-6 overflow-x-auto scrollbar-hide">
-                                    {['itinerary', 'hotels', 'inclusions'].map((tab) => (
+                                    {[
+                                        ...(pkg.itinerary?.length > 0 ? ['itinerary'] : []),
+                                        ...(pkg.hotels?.length > 0 ? ['hotels'] : []),
+                                        ...((pkg.inclusions?.filter(Boolean).length > 0 || pkg.exclusions?.filter(Boolean).length > 0) ? ['inclusions'] : [])
+                                    ].map((tab) => (
                                         <button key={tab} onClick={() => setActiveTab(tab)}
                                             className={`px-4 sm:px-5 py-3 font-semibold text-xs sm:text-sm whitespace-nowrap capitalize transition-all border-b-2 -mb-px ${activeTab === tab ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-gray-500 hover:text-gray-800'}`}>
                                             {tab === 'inclusions' ? 'Inclusions & Exclusions' : tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -233,10 +247,10 @@ export default function PackageDetailPage({ params }) {
                                 </div>
 
                                 {/* Itinerary Tab */}
-                                {activeTab === 'itinerary' && (
+                                {activeTab === 'itinerary' && pkg.itinerary?.length > 0 && (
                                     <div className="space-y-4">
-                                        {pkg.itinerary?.map((day, i) => (
-                                            <motion.div key={day.day} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
+                                        {pkg.itinerary.map((day, i) => (
+                                            <motion.div key={day.day || i} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
                                                 className="flex gap-4 p-5 bg-white rounded-2xl border border-gray-100 hover:border-emerald-200 hover:shadow-md transition-all">
                                                 <div className="flex-shrink-0 w-10 h-10 bg-emerald-600 text-white rounded-xl flex items-center justify-center font-bold text-sm">D{day.day}</div>
                                                 <div className="flex-1">
@@ -256,9 +270,9 @@ export default function PackageDetailPage({ params }) {
                                 )}
 
                                 {/* Hotels Tab */}
-                                {activeTab === 'hotels' && (
+                                {activeTab === 'hotels' && pkg.hotels?.length > 0 && (
                                     <div className="space-y-4">
-                                        {pkg.hotels?.map((hotel, i) => (
+                                        {pkg.hotels.map((hotel, i) => (
                                             <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
                                                 className="flex gap-4 p-5 bg-white rounded-2xl border border-gray-100">
                                                 <div className="w-12 h-12 bg-ocean-100 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -284,26 +298,33 @@ export default function PackageDetailPage({ params }) {
                                 {/* Inclusions Tab */}
                                 {activeTab === 'inclusions' && (
                                     <div className="grid md:grid-cols-2 gap-6">
-                                        <div>
-                                            <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2"><CheckCircle className="w-5 h-5 text-emerald-600" /> Included</h3>
-                                            <ul className="space-y-2.5">
-                                                {pkg.inclusions?.map((item, i) => (
-                                                    <li key={i} className="flex items-start gap-2 text-gray-600 text-sm">
-                                                        <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />{item}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                        <div>
-                                            <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2"><XCircle className="w-5 h-5 text-red-400" /> Excluded</h3>
-                                            <ul className="space-y-2.5">
-                                                {pkg.exclusions?.map((item, i) => (
-                                                    <li key={i} className="flex items-start gap-2 text-gray-600 text-sm">
-                                                        <XCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />{item}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
+                                        {pkg.inclusions?.filter(Boolean).length > 0 && (
+                                            <div>
+                                                <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2"><CheckCircle className="w-5 h-5 text-emerald-600" /> Included</h3>
+                                                <ul className="space-y-2.5">
+                                                    {pkg.inclusions.filter(Boolean).map((item, i) => (
+                                                        <li key={i} className="flex items-start gap-2 text-gray-600 text-sm">
+                                                            <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />{item}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+                                        {pkg.exclusions?.filter(Boolean).length > 0 && (
+                                            <div>
+                                                <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2"><XCircle className="w-5 h-5 text-red-400" /> Excluded</h3>
+                                                <ul className="space-y-2.5">
+                                                    {pkg.exclusions.filter(Boolean).map((item, i) => (
+                                                        <li key={i} className="flex items-start gap-2 text-gray-600 text-sm">
+                                                            <XCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />{item}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+                                        {pkg.inclusions?.filter(Boolean).length === 0 && pkg.exclusions?.filter(Boolean).length === 0 && (
+                                            <div className="md:col-span-2 text-gray-500 italic py-4">No inclusions or exclusions specified for this package.</div>
+                                        )}
                                     </div>
                                 )}
                             </div>

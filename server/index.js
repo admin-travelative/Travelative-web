@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -14,6 +15,9 @@ app.use(cors({
     credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
+
+// Serve static files from public config (mainly for user uploaded images)
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 // Root route for API server
 app.get('/', (req, res) => {

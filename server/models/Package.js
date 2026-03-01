@@ -79,16 +79,16 @@ function inferTravelerTypes(pkg, tags) {
 }
 
 const hotelSchema = new mongoose.Schema({
-    name: { type: String, required: true },
+    name: { type: String },
     stars: { type: Number, min: 1, max: 5, default: 3 },
     location: { type: String },
     amenities: [String],
 });
 
 const itinerarySchema = new mongoose.Schema({
-    day: { type: Number, required: true },
-    title: { type: String, required: true },
-    description: { type: String, required: true },
+    day: { type: Number },
+    title: { type: String },
+    description: { type: String },
     activities: [String],
 });
 

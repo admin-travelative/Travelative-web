@@ -61,7 +61,7 @@ export default function HeroSection() {
                 aria-hidden="true"
             >
                 <Image
-                    src="/Travelative_bg.jpg"
+                    src="/hero_image_travelative.avif"
                     alt="Luxury Travel Background"
                     fill
                     priority
@@ -72,8 +72,8 @@ export default function HeroSection() {
             </motion.div>
             {/* Dark Overlay with gradient */}
             <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
-            {/* Animated green gradient accent */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-emerald-900/30 via-transparent to-ocean-900/20" />
+            {/* Animated orange gradient accent */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-orange-900/30 via-transparent to-amber-900/20" />
 
             {/* Content */}
             <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white pt-24 pb-10 sm:pt-28">
@@ -99,7 +99,7 @@ export default function HeroSection() {
                     className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-serif font-bold leading-tight mb-6"
                 >
                     Don&apos;t just dream,{' '}
-                    <span className="italic text-emerald-300">Travelative.</span>
+                    <span className="italic text-orange-300">Travelative.</span>
                 </motion.h1>
 
                 {/* Subheadline */}
@@ -120,7 +120,7 @@ export default function HeroSection() {
                     transition={{ duration: 0.6, delay: 0.7 }}
                     className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14"
                 >
-                    <Link href="/packages" className="btn-primary w-full sm:w-auto text-sm sm:text-base px-6 sm:px-8 py-3.5 sm:py-4 shadow-2xl shadow-emerald-500/30">
+                    <Link href="/packages" className="btn-primary w-full sm:w-auto text-sm sm:text-base px-6 sm:px-8 py-3.5 sm:py-4 shadow-2xl shadow-orange-500/30">
                         Explore All Packages
                         <ArrowRight className="w-5 h-5" />
                     </Link>
@@ -130,7 +130,7 @@ export default function HeroSection() {
                         rel="noopener noreferrer"
                         className="btn-white w-full sm:w-auto text-sm sm:text-base px-6 sm:px-8 py-3.5 sm:py-4"
                     >
-                        <WhatsAppIcon className="w-5 h-5 text-emerald-600" />
+                        <WhatsAppIcon className="w-5 h-5 text-orange-600" />
                         Chat on WhatsApp
                     </a>
                 </motion.div>
@@ -144,7 +144,7 @@ export default function HeroSection() {
                 >
                     {stats.map((stat, i) => (
                         <div key={i} className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-3 sm:p-4">
-                            <div className="text-2xl md:text-3xl font-bold font-serif text-emerald-300">
+                            <div className="text-2xl md:text-3xl font-bold font-serif text-orange-300">
                                 <AnimatedStatValue
                                     end={stat.end}
                                     suffix={stat.suffix}
