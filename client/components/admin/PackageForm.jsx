@@ -187,7 +187,7 @@ JSON Format:
     "days": Number,
     "nights": Number,
     "locationType": "domestic",
-    "location": "String (e.g. Haridwar, Kedarnath)",
+    "location": "String (e.g. Manali, Himachal Pradesh OR Santorini, South Aegean)",
     "country": "String",
     "category": "String",
     "tags": ["tag1", "tag2"],
@@ -429,7 +429,7 @@ JSON Format:
                         </div>
                         <div>
                             <label className="form-label">Location</label>
-                            <input value={form.location} onChange={(e) => set('location', e.target.value)} placeholder="Bali" className="form-input" />
+                            <input value={form.location} onChange={(e) => set('location', e.target.value)} placeholder="City, State (e.g. Manali, Himachal Pradesh)" className="form-input" />
                         </div>
                         <div>
                             <label className="form-label">Country</label>
