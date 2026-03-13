@@ -24,7 +24,10 @@ export default function Navbar() {
     const isSolid = isScrolled || forceSolid;
 
     useMotionValueEvent(scrollY, 'change', (latest) => {
-        setIsScrolled(latest > 60);
+        const currentlyScrolled = latest > 60;
+        if (isScrolled !== currentlyScrolled) {
+            setIsScrolled(currentlyScrolled);
+        }
     });
 
     return (

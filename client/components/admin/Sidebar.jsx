@@ -18,8 +18,10 @@ export default function Sidebar() {
     const router = useRouter();
     const [mobileOpen, setMobileOpen] = useState(false);
 
-    const handleLogout = () => {
-        localStorage.removeItem('adminToken');
+    const handleLogout = async () => {
+        try {
+            await fetch('http://localhost:5000/api/admin/logout', { method: 'POST', credentials: 'include' });
+        } catch (e) { }
         localStorage.removeItem('adminUser');
         router.push('/admin/login');
     };

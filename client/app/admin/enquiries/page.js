@@ -17,11 +17,9 @@ export default function AdminEnquiriesPage() {
     const [filter, setFilter] = useState('all');
     const [updating, setUpdating] = useState(null);
 
-    const getToken = () => typeof window !== 'undefined' ? localStorage.getItem('adminToken') : '';
-
     const fetchEnquiries = () => {
         setLoading(true);
-        fetch(`${API_URL}/api/admin/enquiries`, { headers: { Authorization: `Bearer ${getToken()}` } })
+        fetch(`${API_URL}/api/admin/enquiries`, { credentials: 'include' })
             .then((r) => r.json())
             .then(setEnquiries)
             .catch(() => { })
@@ -34,7 +32,9 @@ export default function AdminEnquiriesPage() {
         setUpdating(id);
         try {
             const res = await fetch(`${API_URL}/api/admin/enquiries/${id}`, {
-                method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({ status }),
             });
             if (res.ok) {

@@ -33,15 +33,14 @@ export default function AdminDashboard() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const token = localStorage.getItem('adminToken');
-        const headers = { Authorization: `Bearer ${token}` };
+        const headers = { 'Content-Type': 'application/json' };
         Promise.all([
-            fetch(`${API_URL}/api/admin/stats`, { headers }).then((r) => r.json()),
-            fetch(`${API_URL}/api/admin/enquiries`, { headers }).then((r) => r.json()),
+            fetch(`${API_URL}/api/admin/stats`, { headers, credentials: 'include' }).then((r) => r.json()),
+            fetch(`${API_URL}/api/admin/enquiries`, { headers, credentials: 'include' }).then((r) => r.json()),
         ])
             .then(([statsData, enquiriesData]) => {
                 setStats(statsData);
-                setRecentEnquiries(enquiriesData.slice(0, 5));
+                setRecentEnquiries(enquiriesData.slice ? enquiriesData.slice(0, 5) : []);
             })
             .catch(() => { })
             .finally(() => setLoading(false));
@@ -125,7 +124,7 @@ export default function AdminDashboard() {
                                         <div className="text-gray-400 text-xs truncate">{e.packageTitle || 'General Inquiry'} · {e.phone}</div>
                                     </div>
                                     <span className={`flex-shrink-0 px-2 py-0.5 text-xs font-bold rounded-full ${e.status === 'new' ? 'bg-orange-100 text-orange-700' :
-                                            e.status === 'read' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
+                                        e.status === 'read' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
                                         }`}>
                                         {e.status}
                                     </span>

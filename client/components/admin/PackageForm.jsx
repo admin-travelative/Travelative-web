@@ -146,9 +146,9 @@ export default function PackageForm({ initialData = null, packageId = null }) {
             const res = await fetch(`${API_URL}/api/admin/upload`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${getToken()}`
+                    'Content-Type': 'application/json'
                 },
+                credentials: 'include',
                 body: JSON.stringify({ image: compressedBase64 })
             });
 
@@ -263,7 +263,8 @@ JSON Format:
 
                         const res = await fetch(`${API_URL}/api/admin/packages`, {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'include',
                             body: JSON.stringify(payload),
                         });
 
@@ -334,7 +335,9 @@ JSON Format:
             const url = isEdit ? `${API_URL}/api/admin/packages/${packageId}` : `${API_URL}/api/admin/packages`;
             const method = isEdit ? 'PUT' : 'POST';
             const res = await fetch(url, {
-                method, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify(payload),
             });
             if (!res.ok) { const d = await res.json(); throw new Error(d.error || d.message); }

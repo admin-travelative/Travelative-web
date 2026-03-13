@@ -31,8 +31,16 @@ router.post('/login', async (req, res) => {
             { expiresIn: '7d' }
         );
 
+        // 4. Set HTTP-only cookie
+        res.cookie('adminToken', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
         res.json({
-            token,
+            success: true,
             admin: {
                 id: admin._id,
                 username: admin.username,
@@ -44,6 +52,19 @@ router.post('/login', async (req, res) => {
         res.status(500).json({ message: 'Server error during login' });
     }
 });
+
+// GET /api/admin/verify (used by Next.js middleware)
+router.get('/verify', auth, (req, res) => {
+    // If it passes the `auth` middleware, the token is valid
+    res.json({ valid: true, admin: req.admin });
+});
+
+// POST /api/admin/logout
+router.post('/logout', (req, res) => {
+    res.clearCookie('adminToken');
+    res.json({ success: true, message: 'Logged out successfully' });
+});
+
 // POST /api/admin/upload - Receive Base64 image and echo it back for MongoDB storage
 router.post('/upload', auth, (req, res) => {
     try {

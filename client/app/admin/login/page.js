@@ -20,13 +20,17 @@ export default function AdminLoginPage() {
             const res = await fetch(`${API_URL}/api/admin/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify(form),
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.message || 'Login failed');
-            localStorage.setItem('adminToken', data.token);
+
+            // Note: Token is now set as httpOnly cookie by the server
             localStorage.setItem('adminUser', JSON.stringify(data.admin));
-            router.push('/admin');
+
+            // Force a hard navigation to apply the middleware and reload state
+            window.location.href = '/admin';
         } catch (err) {
             setError(err.message || 'Invalid credentials. Please try again.');
         } finally {
@@ -72,7 +76,7 @@ export default function AdminLoginPage() {
                                     value={form.username}
                                     onChange={(e) => setForm({ ...form, username: e.target.value })}
                                     required
-                                    placeholder="admin"
+                                    placeholder="Enter username"
                                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                                 />
                             </div>
@@ -84,7 +88,7 @@ export default function AdminLoginPage() {
                                         value={form.password}
                                         onChange={(e) => setForm({ ...form, password: e.target.value })}
                                         required
-                                        placeholder="••••••••••"
+                                        placeholder="Enter password"
                                         className="w-full px-4 py-3 pr-12 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                                     />
                                     <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white">
@@ -101,9 +105,6 @@ export default function AdminLoginPage() {
                                 {loading ? <><Loader2 className="w-5 h-5 animate-spin" /> Signing in...</> : <><LogIn className="w-5 h-5" /> Sign In to Dashboard</>}
                             </button>
                         </form>
-                        <p className="text-center text-gray-500 text-xs mt-6">
-                            Default: admin / travelative@admin123
-                        </p>
                     </div>
                 </div>
             </motion.div>

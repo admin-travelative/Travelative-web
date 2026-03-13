@@ -1,8 +1,8 @@
 'use client';
-import { motion } from 'framer-motion';
+import { motion, useInView } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { ArrowRight, Star } from 'lucide-react';
 
 const stats = [
@@ -14,8 +14,12 @@ const stats = [
 
 function AnimatedStatValue({ end, suffix = '', decimals = 0, duration = 3200 }) {
     const [value, setValue] = useState(0);
+    const ref = useRef(null);
+    const isInView = useInView(ref, { once: true, margin: "50px" });
 
     useEffect(() => {
+        if (!isInView) return;
+
         let frameId;
         const startTime = performance.now();
 
@@ -33,9 +37,9 @@ function AnimatedStatValue({ end, suffix = '', decimals = 0, duration = 3200 }) 
 
         frameId = requestAnimationFrame(tick);
         return () => cancelAnimationFrame(frameId);
-    }, [end, decimals, duration]);
+    }, [end, decimals, duration, isInView]);
 
-    return <>{value.toFixed(decimals)}{suffix}</>;
+    return <span ref={ref}>{value.toFixed(decimals)}{suffix}</span>;
 }
 
 function WhatsAppIcon({ className = '' }) {
@@ -67,7 +71,7 @@ export default function HeroSection() {
                     priority
                     sizes="100vw"
                     className="object-cover"
-                    style={{ willChange: 'transform' }}
+                    style={{ transform: 'translateZ(0)' }}
                 />
             </motion.div>
             {/* Dark Overlay with gradient */}
