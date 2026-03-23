@@ -6,6 +6,14 @@ import { Package, Mail, TrendingUp, Star, Plus, ArrowRight, Clock } from 'lucide
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
+function getAuthHeaders() {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') : '';
+    return {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    };
+}
+
 function StatCard({ title, value, icon: Icon, color, subtitle }) {
     return (
         <motion.div
@@ -33,7 +41,7 @@ export default function AdminDashboard() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const headers = { 'Content-Type': 'application/json' };
+        const headers = getAuthHeaders();
         Promise.all([
             fetch(`${API_URL}/api/admin/stats`, { headers, credentials: 'include' }).then((r) => r.json()),
             fetch(`${API_URL}/api/admin/enquiries`, { headers, credentials: 'include' }).then((r) => r.json()),

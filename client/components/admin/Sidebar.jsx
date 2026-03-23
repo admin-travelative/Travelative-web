@@ -19,10 +19,19 @@ export default function Sidebar() {
     const [mobileOpen, setMobileOpen] = useState(false);
 
     const handleLogout = async () => {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+        const token = localStorage.getItem('adminToken');
         try {
-            await fetch('http://localhost:5000/api/admin/logout', { method: 'POST', credentials: 'include' });
+            await fetch(`${API_URL}/api/admin/logout`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
         } catch (e) { }
+        // Clear both the JS-accessible cookie and localStorage
+        document.cookie = 'adminToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
         localStorage.removeItem('adminUser');
+        localStorage.removeItem('adminToken');
         router.push('/admin/login');
     };
 

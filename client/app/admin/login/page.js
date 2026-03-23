@@ -26,8 +26,14 @@ export default function AdminLoginPage() {
             const data = await res.json();
             if (!res.ok) throw new Error(data.message || 'Login failed');
 
-            // Note: Token is now set as httpOnly cookie by the server
+            // Save token as a JS-accessible cookie (readable by Next.js middleware)
+            // Expires in 7 days, path=/ so it's available everywhere
+            const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toUTCString();
+            document.cookie = `adminToken=${data.token}; expires=${expires}; path=/; SameSite=Lax`;
+
+            // Also save admin info in localStorage
             localStorage.setItem('adminUser', JSON.stringify(data.admin));
+            localStorage.setItem('adminToken', data.token);
 
             // Force a hard navigation to apply the middleware and reload state
             window.location.href = '/admin';

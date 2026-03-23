@@ -6,6 +6,14 @@ import { Plus, Pencil, Trash2, TrendingUp, AlertCircle, Star, Search, Loader2 } 
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
+function getAuthHeaders() {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') : '';
+    return {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    };
+}
+
 function formatPrice(price) {
     return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price);
 }
@@ -18,7 +26,7 @@ export default function AdminPackagesPage() {
 
     const fetchPackages = () => {
         setLoading(true);
-        fetch(`${API_URL}/api/admin/packages`, { credentials: 'include' })
+        fetch(`${API_URL}/api/admin/packages`, { headers: getAuthHeaders(), credentials: 'include' })
             .then((r) => r.json())
             .then(setPackages)
             .catch(() => { })
@@ -33,6 +41,7 @@ export default function AdminPackagesPage() {
         try {
             const res = await fetch(`${API_URL}/api/admin/packages/${id}`, {
                 method: 'DELETE',
+                headers: getAuthHeaders(),
                 credentials: 'include'
             });
             if (res.ok) fetchPackages();

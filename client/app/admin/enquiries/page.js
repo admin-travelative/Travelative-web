@@ -5,6 +5,14 @@ import { Mail, Phone, CheckCircle, Clock, MessageSquare, Loader2, RefreshCw } fr
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
+function getAuthHeaders() {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') : '';
+    return {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    };
+}
+
 const statusColors = {
     new: 'bg-orange-100 text-orange-700',
     read: 'bg-blue-100 text-blue-700',
@@ -19,7 +27,7 @@ export default function AdminEnquiriesPage() {
 
     const fetchEnquiries = () => {
         setLoading(true);
-        fetch(`${API_URL}/api/admin/enquiries`, { credentials: 'include' })
+        fetch(`${API_URL}/api/admin/enquiries`, { headers: getAuthHeaders(), credentials: 'include' })
             .then((r) => r.json())
             .then(setEnquiries)
             .catch(() => { })
@@ -33,7 +41,7 @@ export default function AdminEnquiriesPage() {
         try {
             const res = await fetch(`${API_URL}/api/admin/enquiries/${id}`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getAuthHeaders(),
                 credentials: 'include',
                 body: JSON.stringify({ status }),
             });
