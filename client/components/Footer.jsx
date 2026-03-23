@@ -27,14 +27,14 @@ const footerLinks = {
 
 export default function Footer() {
     return (
-        <footer className="bg-gray-950 text-gray-300">
+        <footer className="bg-orange-950 text-gray-300">
             {/* Main Footer */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
                     {/* Brand Column */}
                     <div className="lg:col-span-2">
-                        <Link href="/" className="inline-flex items-center mb-6 p-2 sm:p-2.5 bg-white rounded-2xl shadow-md transition-transform duration-300 hover:scale-105 origin-left">
-                            <img src="/Travelative_logo.png" alt="Travelative" className="h-14 sm:h-16 md:h-20 w-auto object-contain" />
+                        <Link href="/" className="inline-flex items-center mb-6 transition-transform duration-300 hover:scale-105 origin-left">
+                            <img src="/Travelative_logo.png" alt="Travelative" className="h-14 sm:h-16 md:h-20 w-auto object-contain bg-white rounded-xl px-3 py-1" />
                         </Link>
                         <p className="text-gray-400 leading-relaxed mb-6 max-w-sm">
                             We craft premium travel experiences that turn your dream vacations into unforgettable realities.
@@ -43,11 +43,11 @@ export default function Footer() {
 
                         {/* Contact Info */}
                         <div className="space-y-3">
-                            <a href="tel:+91XXXXXXXXXX" className="flex items-center gap-3 text-gray-400 hover:text-emerald-400 transition-colors duration-200">
+                            <a href="tel:+91XXXXXXXXXX" className="flex items-center gap-3 text-gray-400 hover:text-orange-400 transition-colors duration-200">
                                 <Phone className="w-4 h-4 flex-shrink-0" />
                                 <span>+91 070882 21122</span>
                             </a>
-                            <a href="mailto:info@travelative.com" className="flex items-center gap-3 text-gray-400 hover:text-emerald-400 transition-colors duration-200">
+                            <a href="mailto:info@travelative.com" className="flex items-center gap-3 text-gray-400 hover:text-orange-400 transition-colors duration-200">
                                 <Mail className="w-4 h-4 flex-shrink-0" />
                                 <span>info@travelative.com</span>
                             </a>
@@ -63,7 +63,7 @@ export default function Footer() {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 aria-label="Instagram"
-                                className="w-10 h-10 bg-gray-800 hover:bg-emerald-600 rounded-xl flex items-center justify-center transition-colors duration-200"
+                                className="w-10 h-10 bg-gray-800 hover:bg-orange-600 rounded-xl flex items-center justify-center transition-colors duration-200"
                             >
                                 <Instagram className="w-5 h-5" />
                             </a>
@@ -72,7 +72,7 @@ export default function Footer() {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 aria-label="Facebook"
-                                className="w-10 h-10 bg-gray-800 hover:bg-emerald-600 rounded-xl flex items-center justify-center transition-colors duration-200"
+                                className="w-10 h-10 bg-gray-800 hover:bg-orange-600 rounded-xl flex items-center justify-center transition-colors duration-200"
                             >
                                 <Facebook className="w-5 h-5" />
                             </a>
@@ -88,7 +88,7 @@ export default function Footer() {
                                     <li key={link.label}>
                                         <Link
                                             href={link.href}
-                                            className="text-gray-400 hover:text-emerald-400 transition-colors duration-200 text-sm"
+                                            className="text-gray-400 hover:text-orange-400 transition-colors duration-200 text-sm"
                                         >
                                             {link.label}
                                         </Link>
@@ -101,11 +101,11 @@ export default function Footer() {
             </div>
 
             {/* Bottom Bar */}
-            <div className="border-t border-gray-800">
+            <div className="border-t border-orange-900/40">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
                     <p className="text-gray-500 text-sm flex flex-col sm:flex-row items-center gap-1 sm:gap-4 text-center sm:text-left">
                         <span>© {new Date().getFullYear()} Travelative. All rights reserved.</span>
-                        <Link href="/admin/login" className="hover:text-emerald-500 transition-colors duration-200">
+                        <Link href="/admin/login" className="hover:text-orange-500 transition-colors duration-200">
                             Admin Portal
                         </Link>
                     </p>

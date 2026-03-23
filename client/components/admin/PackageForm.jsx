@@ -1,8 +1,8 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { Plus, X, Loader2, Save, ArrowLeft } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Plus, X, Loader2, Save, ArrowLeft, Wand2, Copy, Check } from 'lucide-react';
 import Link from 'next/link';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -17,12 +17,23 @@ export default function PackageForm({ initialData = null, packageId = null }) {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
 
+    // Autofill Modal State
+    const [showAutoFill, setShowAutoFill] = useState(false);
+    const [autoFillJson, setAutoFillJson] = useState('');
+    const [copiedPrompt, setCopiedPrompt] = useState(false);
+    const [autoFillError, setAutoFillError] = useState('');
+    const [bulkUpload, setBulkUpload] = useState({ active: false, current: 0, total: 0, title: '' });
+
+    const initNights = initialData?.duration ? (initialData.duration.match(/(\d+)\s*night/i)?.[1] || '') : '';
+    const initDays = initialData?.durationDays || (initialData?.duration ? (initialData.duration.match(/(\d+)\s*day/i)?.[1] || '') : '');
+
     const [form, setForm] = useState({
         title: initialData?.title || '',
         slug: initialData?.slug || '',
         price: initialData?.price || '',
         originalPrice: initialData?.originalPrice || '',
-        duration: initialData?.duration || '',
+        days: initDays,
+        nights: initNights,
         description: initialData?.description || '',
         shortDescription: initialData?.shortDescription || '',
         category: initialData?.category || 'Adventure',
@@ -38,7 +49,7 @@ export default function PackageForm({ initialData = null, packageId = null }) {
         isTrending: initialData?.isTrending || false,
         isLimitedSlots: initialData?.isLimitedSlots || false,
         slotsLeft: initialData?.slotsLeft || '',
-        images: initialData?.images || [''],
+        images: initialData?.images || [],
         inclusions: initialData?.inclusions || [''],
         exclusions: initialData?.exclusions || [''],
         hotels: initialData?.hotels || [{ name: '', stars: 4, location: '', amenities: [''] }],
@@ -78,6 +89,202 @@ export default function PackageForm({ initialData = null, packageId = null }) {
         set('itinerary', itinerary);
     };
 
+    const compressImage = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    // Max dimensions to shrink down huge photos (1920x1920 for high quality Web)
+                    const MAX_WIDTH = 1920;
+                    const MAX_HEIGHT = 1920;
+                    if (width > height) {
+                        if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                    } else {
+                        if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    // Enable high quality image smoothing
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Compress to JPEG incrementally to hit target < 1.5MB for better clarity
+                    let quality = 0.95;
+                    let base64 = canvas.toDataURL('image/jpeg', quality);
+
+                    // 1.5MB is ~ 2,000,000 characters in base64
+                    while (base64.length > 2000000 && quality > 0.3) {
+                        quality -= 0.1;
+                        base64 = canvas.toDataURL('image/jpeg', quality);
+                    }
+                    resolve(base64);
+                };
+                img.onerror = (err) => reject(err);
+            };
+            reader.onerror = (err) => reject(err);
+        });
+    };
+
+    const handleImageUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        try {
+            setSaving(true);
+            const compressedBase64 = await compressImage(file);
+
+            const res = await fetch(`${API_URL}/api/admin/upload`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({ image: compressedBase64 })
+            });
+
+            if (!res.ok) throw new Error('Failed to upload image');
+            const data = await res.json();
+
+            // Append new image URL
+            const newImages = form.images.filter(img => img !== ''); // remove any empty string placeholders
+            set('images', [...newImages, data.url]);
+        } catch (err) {
+            setError(err.message || 'Image upload failed');
+        } finally {
+            setSaving(false);
+            e.target.value = ''; // Reset input
+        }
+    };
+
+    const aiPromptText = `Extract package details from the provided image and format them EXACTLY as a JSON array of objects below. Follow these rules strictly:
+1. If the image contains multiple packages, extract EACH one as a separate object in the array. If it's just one package, return an array with one object.
+2. ONLY fill fields explicitly mentioned or logically inferred. Do NOT make up info.
+3. DO NOT include image URLs or fake data for images.
+4. Only include 'price', 'days' (Number), and 'nights' (Number) if present.
+5. Set 'locationType' to exactly "domestic" (if in India) or "international".
+6. Generate 'tags' (array) for SEO based on the destination vibe.
+7. Generate 'category' (choose exactly one: Adventure, Relax, Honeymoon, Family).
+8. Generate a 'shortDescription' (1 line) and a 'description' (detailed, SEO friendly).
+9. List 'travelerTypes' (array: subset of ["couple", "family", "solo", "friends"]).
+10. Set 'rating' (e.g., 4.5).
+11. Output ONLY valid JSON, no markdown blocks, no extra text.
+
+JSON Format:
+[
+  {
+    "title": "String",
+    "price": Number,
+    "days": Number,
+    "nights": Number,
+    "locationType": "domestic",
+    "location": "String (e.g. Manali, Himachal Pradesh OR Santorini, South Aegean)",
+    "country": "String",
+    "category": "String",
+    "tags": ["tag1", "tag2"],
+    "travelerTypes": ["family", "couple"],
+    "rating": 4.5,
+    "shortDescription": "String",
+    "description": "String"
+  }
+]`;
+
+    const handleCopyPrompt = async () => {
+        try {
+            await navigator.clipboard.writeText(aiPromptText);
+            setCopiedPrompt(true);
+            setTimeout(() => setCopiedPrompt(false), 2000);
+        } catch (err) {
+            console.error('Failed to copy', err);
+        }
+    };
+    const applyAutoFill = async () => {
+        try {
+            setAutoFillError('');
+            if (!autoFillJson.trim()) {
+                setAutoFillError('Please paste the JSON first.');
+                return;
+            }
+
+            // Handle markdown code blocks if AI wrapped it
+            let cleanJson = autoFillJson.trim();
+            if (cleanJson.startsWith('\`\`\`json')) cleanJson = cleanJson.substring(7);
+            if (cleanJson.startsWith('\`\`\`')) cleanJson = cleanJson.substring(3);
+            if (cleanJson.endsWith('\`\`\`')) cleanJson = cleanJson.substring(0, cleanJson.length - 3);
+
+            let parsedData = JSON.parse(cleanJson.trim());
+
+            // Always treat the input as an array to trigger the bulk UI
+            if (!Array.isArray(parsedData)) {
+                parsedData = [parsedData];
+            }
+
+            if (parsedData.length > 0) {
+                setShowAutoFill(false);
+                setBulkUpload({ active: true, current: 0, total: parsedData.length, title: 'Initializing...' });
+
+                let successCount = 0;
+                for (let i = 0; i < parsedData.length; i++) {
+                    const aiPkg = parsedData[i];
+                    setBulkUpload({ active: true, current: i + 1, total: parsedData.length, title: aiPkg.title || `Package ${i + 1}` });
+
+                    try {
+                        const parsedTags = Array.isArray(aiPkg.tags) ? aiPkg.tags.map(t => String(t).trim().toLowerCase()).filter(Boolean) : [];
+                        const payload = {
+                            title: aiPkg.title || `Package ${i + 1}`,
+                            slug: slugify(aiPkg.title || `pkg-${Date.now()}-${i}`),
+                            price: Number(aiPkg.price) || 0,
+                            category: aiPkg.category || 'Adventure',
+                            locationType: aiPkg.locationType === 'international' ? 'international' : 'domestic',
+                            location: aiPkg.location || '',
+                            country: aiPkg.country || '',
+                            duration: `${aiPkg.nights || 0} Nights / ${aiPkg.days || 0} Days`,
+                            durationDays: Number(aiPkg.days) || 0,
+                            tags: parsedTags.length > 0 ? parsedTags : ['travel'],
+                            travelerTypes: Array.isArray(aiPkg.travelerTypes) && aiPkg.travelerTypes.length > 0 ? aiPkg.travelerTypes : ['family'],
+                            rating: Number(aiPkg.rating) || 4.5,
+                            shortDescription: aiPkg.shortDescription || '',
+                            description: aiPkg.description || '',
+                            images: [],
+                            inclusions: [],
+                            exclusions: [],
+                            hotels: [],
+                            itinerary: []
+                        };
+
+                        const res = await fetch(`${API_URL}/api/admin/packages`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'include',
+                            body: JSON.stringify(payload),
+                        });
+
+                        if (res.ok) successCount++;
+                    } catch (err) {
+                        console.error('Error saving package:', err);
+                    }
+                }
+
+                setBulkUpload({ active: false, current: 0, total: 0, title: '' });
+                router.push('/admin/packages');
+            } else {
+                setAutoFillError("No package data found in JSON.");
+            }
+            setAutoFillJson('');
+        } catch (err) {
+            setAutoFillError('Invalid JSON format. Please ensure you copied exactly what the AI returned.');
+        }
+    };
+
     const toggleTravelerType = (type) => {
         const current = Array.isArray(form.travelerTypes) ? form.travelerTypes : [];
         const next = current.includes(type)
@@ -96,7 +303,7 @@ export default function PackageForm({ initialData = null, packageId = null }) {
                 .filter(Boolean);
 
             if (!form.locationType) throw new Error('Please select location type (domestic/international).');
-            if (!form.durationDays || Number(form.durationDays) <= 0) throw new Error('Please enter duration in days.');
+            if (!form.days || !form.nights) throw new Error('Please enter both days and nights.');
             if (parsedTags.length === 0) throw new Error('Please add at least one tag.');
             if (!Array.isArray(form.travelerTypes) || form.travelerTypes.length === 0) {
                 throw new Error('Please select at least one traveler type.');
@@ -104,24 +311,33 @@ export default function PackageForm({ initialData = null, packageId = null }) {
 
             const payload = {
                 ...form,
+                duration: `${form.nights} Nights / ${form.days} Days`,
+                durationDays: Number(form.days),
                 slug: form.slug || slugify(form.title),
                 price: Number(form.price),
                 originalPrice: form.originalPrice ? Number(form.originalPrice) : undefined,
-                durationDays: form.durationDays ? Number(form.durationDays) : undefined,
                 slotsLeft: form.slotsLeft ? Number(form.slotsLeft) : undefined,
                 tags: parsedTags,
                 travelerTypes: Array.isArray(form.travelerTypes) ? form.travelerTypes : [],
                 images: form.images.filter(Boolean),
                 inclusions: form.inclusions.filter(Boolean),
                 exclusions: form.exclusions.filter(Boolean),
-                hotels: form.hotels.map((h) => ({ ...h, stars: Number(h.stars), amenities: h.amenities.filter(Boolean) })),
-                itinerary: form.itinerary.map((d, i) => ({ ...d, day: i + 1, activities: d.activities.filter(Boolean) })),
+                hotels: form.hotels
+                    .filter(h => h.name && h.name.trim() !== '')
+                    .map((h) => ({ ...h, stars: Number(h.stars), amenities: h.amenities.filter(Boolean) })),
+                itinerary: form.itinerary
+                    .filter(d => d.title && d.title.trim() !== '')
+                    .map((d, i) => ({ ...d, day: i + 1, activities: d.activities.filter(Boolean) })),
             };
             delete payload.tagsText;
+            delete payload.days;
+            delete payload.nights;
             const url = isEdit ? `${API_URL}/api/admin/packages/${packageId}` : `${API_URL}/api/admin/packages`;
             const method = isEdit ? 'PUT' : 'POST';
             const res = await fetch(url, {
-                method, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify(payload),
             });
             if (!res.ok) { const d = await res.json(); throw new Error(d.error || d.message); }
@@ -149,7 +365,12 @@ export default function PackageForm({ initialData = null, packageId = null }) {
             <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Basic Info */}
                 <div className="admin-card space-y-5">
-                    <h2 className="font-bold text-gray-900 text-lg">Basic Information</h2>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <h2 className="font-bold text-gray-900 text-lg">Basic Information</h2>
+                        <button type="button" onClick={() => setShowAutoFill(true)} className="flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md transition-all active:scale-95">
+                            <Wand2 className="w-4 h-4" /> Autofill with AI (JSON)
+                        </button>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="md:col-span-2">
                             <label className="form-label">Package Title *</label>
@@ -182,12 +403,12 @@ export default function PackageForm({ initialData = null, packageId = null }) {
                             <input type="number" value={form.originalPrice} onChange={(e) => set('originalPrice', e.target.value)} placeholder="55000" className="form-input" />
                         </div>
                         <div>
-                            <label className="form-label">Duration *</label>
-                            <input value={form.duration} onChange={(e) => set('duration', e.target.value)} required placeholder="7 Days / 6 Nights" className="form-input" />
+                            <label className="form-label">Days *</label>
+                            <input type="number" min="1" value={form.days} onChange={(e) => set('days', e.target.value)} required placeholder="e.g. 11" className="form-input" />
                         </div>
                         <div>
-                            <label className="form-label">Duration (Days) *</label>
-                            <input type="number" min="1" value={form.durationDays} onChange={(e) => set('durationDays', e.target.value)} required placeholder="7" className="form-input" />
+                            <label className="form-label">Nights *</label>
+                            <input type="number" min="0" value={form.nights} onChange={(e) => set('nights', e.target.value)} required placeholder="e.g. 10" className="form-input" />
                         </div>
                         <div className="md:col-span-2">
                             <label className="form-label">Tags * (comma separated)</label>
@@ -211,7 +432,7 @@ export default function PackageForm({ initialData = null, packageId = null }) {
                         </div>
                         <div>
                             <label className="form-label">Location</label>
-                            <input value={form.location} onChange={(e) => set('location', e.target.value)} placeholder="Bali" className="form-input" />
+                            <input value={form.location} onChange={(e) => set('location', e.target.value)} placeholder="City, State (e.g. Manali, Himachal Pradesh)" className="form-input" />
                         </div>
                         <div>
                             <label className="form-label">Country</label>
@@ -256,20 +477,28 @@ export default function PackageForm({ initialData = null, packageId = null }) {
                 </div>
 
                 {/* Images */}
-                <div className="admin-card space-y-3">
+                <div className="admin-card space-y-4">
                     <h2 className="font-bold text-gray-900 text-lg">Images</h2>
-                    <p className="text-sm text-gray-500">Add image URLs (Unsplash, Cloudinary, etc.). First image is the cover.</p>
-                    {form.images.map((img, i) => (
-                        <div key={i} className="flex gap-2">
-                            <input value={img} onChange={(e) => setArr('images', i, e.target.value)} placeholder={`Image ${i + 1} URL`} className="form-input flex-1 text-sm" />
-                            <button type="button" onClick={() => removeArr('images', i)} disabled={form.images.length === 1} className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl disabled:opacity-30">
-                                <X className="w-4 h-4" />
-                            </button>
-                        </div>
-                    ))}
-                    <button type="button" onClick={() => addArr('images', '')} className="flex items-center gap-1.5 text-emerald-600 text-sm font-semibold hover:text-emerald-800">
-                        <Plus className="w-4 h-4" /> Add Image
-                    </button>
+                    <p className="text-sm text-gray-500">Upload package images. The first image will be used as the cover.</p>
+
+                    <div className="flex flex-wrap gap-4 mb-4">
+                        {form.images.filter(Boolean).map((img, i) => (
+                            <div key={i} className="relative group w-32 h-32 rounded-xl overflow-hidden border border-gray-200">
+                                <img src={img.startsWith('http') || img.startsWith('data:') ? img : `${API_URL}${img}`} alt={`Upload ${i + 1}`} className="w-full h-full object-cover" />
+                                <button type="button" onClick={() => removeArr('images', form.images.indexOf(img))}
+                                    className="absolute top-2 right-2 p-1.5 bg-white/90 text-red-500 hover:bg-red-500 hover:text-white rounded-lg shadow-sm transition-all opacity-0 group-hover:opacity-100">
+                                    <X className="w-4 h-4" />
+                                </button>
+                                {i === 0 && <span className="absolute bottom-0 left-0 right-0 bg-emerald-600/90 text-white text-[10px] uppercase font-bold text-center py-1">Cover</span>}
+                            </div>
+                        ))}
+
+                        <label className="w-32 h-32 flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-emerald-500 hover:bg-emerald-50 transition-all text-gray-500 hover:text-emerald-600">
+                            {saving ? <Loader2 className="w-6 h-6 animate-spin" /> : <Plus className="w-6 h-6" />}
+                            <span className="text-xs font-semibold">{saving ? 'Uploading...' : 'Add Image'}</span>
+                            <input type="file" accept="image/*" onChange={handleImageUpload} disabled={saving} className="hidden" />
+                        </label>
+                    </div>
                 </div>
 
                 {/* Itinerary */}
@@ -389,6 +618,101 @@ export default function PackageForm({ initialData = null, packageId = null }) {
                     <Link href="/admin/packages" className="btn-outline w-full sm:w-auto py-3.5 px-6 text-center">Cancel</Link>
                 </div>
             </form>
-        </div>
+
+            {/* AI Autofill Modal */}
+            <AnimatePresence>
+                {showAutoFill && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowAutoFill(false)} className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" />
+                        <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="relative bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                            <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-indigo-50 to-purple-50">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center">
+                                        <Wand2 className="w-5 h-5 text-indigo-600" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-gray-900 text-lg">Autofill from AI</h3>
+                                        <p className="text-sm text-gray-500">Paste JSON generated from ChatGPT/Gemini</p>
+                                    </div>
+                                </div>
+                                <button onClick={() => setShowAutoFill(false)} className="p-2 text-gray-400 hover:bg-white hover:text-gray-900 rounded-xl transition-all"><X className="w-5 h-5" /></button>
+                            </div>
+
+                            <div className="p-5 overflow-y-auto space-y-5">
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-sm font-bold text-gray-700">1. Copy this strictly formatted Prompt</label>
+                                        <button onClick={handleCopyPrompt} className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 bg-indigo-50 px-2 py-1.5 rounded-lg transition-colors">
+                                            {copiedPrompt ? <><Check className="w-3.5 h-3.5" /> Copied!</> : <><Copy className="w-3.5 h-3.5" /> Copy Prompt</>}
+                                        </button>
+                                    </div>
+                                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 text-xs md:text-sm text-gray-600 font-mono whitespace-pre-wrap max-h-40 overflow-y-auto custom-scrollbar">
+                                        {aiPromptText}
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-1">Paste this prompt along with your package image into Gemini or ChatGPT.</p>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-gray-700">2. Paste AI Output (JSON) Here</label>
+                                    <textarea
+                                        value={autoFillJson}
+                                        onChange={(e) => setAutoFillJson(e.target.value)}
+                                        placeholder="{\n  &quot;title&quot;: &quot;Char Dham Yatra&quot;,\n  &quot;price&quot;: 9999,\n  ...\n}"
+                                        className="w-full form-input font-mono text-xs md:text-sm resize-none h-48 focus:border-indigo-500 focus:ring-indigo-500/20"
+                                    />
+                                </div>
+
+                                {autoFillError && (
+                                    <div className="text-red-600 bg-red-50 text-sm font-semibold p-3 rounded-xl border border-red-100 flex items-start gap-2">
+                                        <X className="w-4 h-4 mt-0.5 flex-shrink-0" /> {autoFillError}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="p-5 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+                                <button type="button" onClick={() => setShowAutoFill(false)} className="px-5 py-2.5 rounded-xl font-semibold text-gray-600 hover:bg-gray-200 transition-all text-sm">Cancel</button>
+                                <button type="button" onClick={applyAutoFill} className="px-5 py-2.5 rounded-xl font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 transition-all text-sm flex items-center gap-2">
+                                    <Wand2 className="w-4 h-4" /> Apply Autofill
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Bulk Upload Progress Modal */}
+            <AnimatePresence>
+                {bulkUpload.active && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                            className="bg-white rounded-3xl shadow-xl w-full max-w-sm overflow-hidden"
+                        >
+                            <div className="p-8 flex flex-col items-center justify-center text-center space-y-4">
+                                <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mb-2">
+                                    <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+                                </div>
+                                <div className="w-full">
+                                    <h3 className="font-bold text-gray-900 text-xl mb-1">Creating Packages</h3>
+                                    <p className="text-gray-500 text-sm mb-4">Saving {bulkUpload.current} of {bulkUpload.total}</p>
+
+                                    <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden mb-3">
+                                        <div
+                                            className="bg-gradient-to-r from-indigo-500 to-purple-600 h-2.5 rounded-full transition-all duration-300 ease-out"
+                                            style={{ width: `${(bulkUpload.current / bulkUpload.total) * 100}%` }}
+                                        ></div>
+                                    </div>
+                                    <p className="text-sm font-semibold text-indigo-700 truncate px-2">
+                                        Processing: {bulkUpload.title}
+                                    </p>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+        </div >
     );
 }

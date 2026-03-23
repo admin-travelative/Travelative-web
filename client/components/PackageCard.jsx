@@ -28,7 +28,7 @@ function getDisplayVibe(pkg) {
 export default function PackageCard({ pkg, index = 0 }) {
     const [weatherState, setWeatherState] = useState(null);
 
-    const image = pkg.images?.[0] || 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800';
+    const image = pkg.images?.[0] || '';
     const discount = pkg.originalPrice ? Math.round(((pkg.originalPrice - pkg.price) / pkg.originalPrice) * 100) : null;
     const displayVibe = getDisplayVibe(pkg);
     const hasLocation = Boolean(pkg?.location || pkg?.country);
@@ -76,26 +76,33 @@ export default function PackageCard({ pkg, index = 0 }) {
         >
             <Link href={`/packages/${pkg.slug}`} className="group block card">
                 {/* Image Section */}
-                <div className="relative h-56 overflow-hidden">
-                    <Image
-                        src={image}
-                        alt={pkg.title}
-                        fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        className="object-cover transition-transform duration-700 group-hover:scale-110"
-                    />
+                <div className="relative h-56 overflow-hidden bg-emerald-50 flex items-center justify-center">
+                    {image ? (
+                        <Image
+                            src={image}
+                            alt={pkg.title}
+                            fill
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            className="object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
+                    ) : (
+                        <div className="flex flex-col items-center justify-center text-emerald-200">
+                            <MapPin className="w-12 h-12 mb-2 opacity-50" />
+                            <span className="text-sm font-semibold opacity-70">No Image provided</span>
+                        </div>
+                    )}
                     {/* Gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                    {image && <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />}
 
                     {/* Badges */}
                     <div className="absolute top-3 left-3 flex flex-col gap-1.5">
                         {pkg.isTrending && (
-                            <span className="badge-trending">
+                            <span className="badge-trending shadow-md">
                                 <TrendingUp className="w-3 h-3" /> Trending
                             </span>
                         )}
                         {pkg.isLimitedSlots && (
-                            <span className="badge-limited">
+                            <span className="badge-limited shadow-md">
                                 <AlertCircle className="w-3 h-3" />
                                 {pkg.slotsLeft ? `Only ${pkg.slotsLeft} slots left!` : 'Limited Slots'}
                             </span>
@@ -104,14 +111,14 @@ export default function PackageCard({ pkg, index = 0 }) {
 
                     {/* Discount badge */}
                     {discount && (
-                        <div className="absolute top-3 right-3 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                        <div className="absolute top-3 right-3 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-md">
                             {discount}% OFF
                         </div>
                     )}
 
                     {/* Category tag */}
                     <div className="absolute bottom-3 right-3">
-                        <span className="bg-white/90 text-gray-700 text-xs font-bold px-3 py-1 rounded-full">
+                        <span className="bg-white/90 text-gray-700 text-xs font-bold px-3 py-1 rounded-full shadow-sm">
                             {displayVibe}
                         </span>
                     </div>
@@ -119,7 +126,7 @@ export default function PackageCard({ pkg, index = 0 }) {
                     {/* Weather badge */}
                     <div className="absolute bottom-3 left-3">
                         {weather ? (
-                            <span className="inline-flex items-center gap-1.5 bg-black/55 text-white text-xs font-semibold px-3 py-1 rounded-full backdrop-blur-sm border border-white/20">
+                            <span className="inline-flex items-center gap-1.5 bg-black/55 text-white text-xs font-semibold px-3 py-1 rounded-full backdrop-blur-sm border border-white/20 shadow-sm">
                                 <span className="relative inline-flex w-2.5 h-2.5">
                                     <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-70 animate-ping" />
                                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400 animate-pulse" />
@@ -131,7 +138,7 @@ export default function PackageCard({ pkg, index = 0 }) {
                                 </span>
                             </span>
                         ) : weatherLoading ? (
-                            <span className="inline-flex items-center gap-1.5 bg-black/45 text-white/80 text-xs font-medium px-3 py-1 rounded-full backdrop-blur-sm border border-white/10">
+                            <span className="inline-flex items-center gap-1.5 bg-black/45 text-white/80 text-xs font-medium px-3 py-1 rounded-full backdrop-blur-sm border border-white/10 shadow-sm">
                                 <Cloud className="w-3.5 h-3.5 animate-pulse" />
                                 <span>Weather...</span>
                             </span>

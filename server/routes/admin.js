@@ -11,14 +11,70 @@ const auth = require('../middleware/auth');
 router.post('/login', async (req, res) => {
     try {
         const { username, password } = req.body;
+
+        // 1. Find admin
         const admin = await Admin.findOne({ username });
-        if (!admin) return res.status(401).json({ message: 'Invalid credentials' });
+        if (!admin) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        // 2. Check password
         const isMatch = await admin.comparePassword(password);
-        if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
-        const token = jwt.sign({ id: admin._id, username: admin.username, role: admin.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        res.json({ token, admin: { username: admin.username, role: admin.role } });
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        // 3. Generate token
+        const token = jwt.sign(
+            { id: admin._id, role: admin.role },
+            process.env.JWT_SECRET || 'travelative_secret_key',
+            { expiresIn: '7d' }
+        );
+
+        // 4. Set HTTP-only cookie
+        res.cookie('adminToken', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
+        res.json({
+            success: true,
+            admin: {
+                id: admin._id,
+                username: admin.username,
+                role: admin.role
+            }
+        });
     } catch (err) {
-        res.status(500).json({ message: 'Server error', error: err.message });
+        console.error('Login error:', err);
+        res.status(500).json({ message: 'Server error during login' });
+    }
+});
+
+// GET /api/admin/verify (used by Next.js middleware)
+router.get('/verify', auth, (req, res) => {
+    // If it passes the `auth` middleware, the token is valid
+    res.json({ valid: true, admin: req.admin });
+});
+
+// POST /api/admin/logout
+router.post('/logout', (req, res) => {
+    res.clearCookie('adminToken');
+    res.json({ success: true, message: 'Logged out successfully' });
+});
+
+// POST /api/admin/upload - Receive Base64 image and echo it back for MongoDB storage
+router.post('/upload', auth, (req, res) => {
+    try {
+        const { image } = req.body;
+        if (!image) return res.status(400).json({ message: 'No image data provided' });
+
+        // Return the base64 string to be stored directly in MongoDB
+        res.json({ url: image });
+    } catch (err) {
+        res.status(500).json({ message: 'Error processing image', error: err.message });
     }
 });
 

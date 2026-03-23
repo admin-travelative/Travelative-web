@@ -16,10 +16,9 @@ export default function AdminPackagesPage() {
     const [search, setSearch] = useState('');
     const [deleting, setDeleting] = useState(null);
 
-    const getToken = () => typeof window !== 'undefined' ? localStorage.getItem('adminToken') : '';
-
     const fetchPackages = () => {
-        fetch(`${API_URL}/api/admin/packages`, { headers: { Authorization: `Bearer ${getToken()}` } })
+        setLoading(true);
+        fetch(`${API_URL}/api/admin/packages`, { credentials: 'include' })
             .then((r) => r.json())
             .then(setPackages)
             .catch(() => { })
@@ -32,8 +31,11 @@ export default function AdminPackagesPage() {
         if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
         setDeleting(id);
         try {
-            await fetch(`${API_URL}/api/admin/packages/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${getToken()}` } });
-            setPackages((prev) => prev.filter((p) => p._id !== id));
+            const res = await fetch(`${API_URL}/api/admin/packages/${id}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+            if (res.ok) fetchPackages();
         } catch { }
         setDeleting(null);
     };
@@ -105,9 +107,9 @@ export default function AdminPackagesPage() {
                                         </td>
                                         <td className="px-4 py-4">
                                             <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${pkg.category === 'Adventure' ? 'bg-orange-100 text-orange-700' :
-                                                    pkg.category === 'Honeymoon' ? 'bg-rose-100 text-rose-700' :
-                                                        pkg.category === 'Family' ? 'bg-emerald-100 text-emerald-700' :
-                                                            'bg-ocean-100 text-ocean-700'
+                                                pkg.category === 'Honeymoon' ? 'bg-rose-100 text-rose-700' :
+                                                    pkg.category === 'Family' ? 'bg-emerald-100 text-emerald-700' :
+                                                        'bg-ocean-100 text-ocean-700'
                                                 }`}>{pkg.category}</span>
                                         </td>
                                         <td className="px-4 py-4 font-bold text-emerald-700">{formatPrice(pkg.price)}</td>

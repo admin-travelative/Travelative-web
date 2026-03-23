@@ -12,8 +12,7 @@ export default function EditPackagePage({ params }) {
     const [error, setError] = useState('');
 
     useEffect(() => {
-        const token = localStorage.getItem('adminToken');
-        fetch(`${API_URL}/api/admin/packages`, { headers: { Authorization: `Bearer ${token}` } })
+        fetch(`${API_URL}/api/admin/packages`, { credentials: 'include' })
             .then((r) => r.json())
             .then((packages) => {
                 const found = packages.find((p) => p._id === id);

@@ -2,6 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dns = require('dns');
+const path = require('path');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
 // Workaround for MongoDB querySrv ECONNREFUSED error (ISP DNS Block)
@@ -19,9 +21,13 @@ app.use(cors({
         // Allow all origins dynamically (required for production Vercel domain)
         return callback(null, true);
     },
-    credentials: true
+    credentials: true // Important for cookies
 }));
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '50mb' }));
+app.use(cookieParser());
+
+// Serve static files from public config (mainly for user uploaded images)
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 // Root route for API server
 app.get('/', (req, res) => {

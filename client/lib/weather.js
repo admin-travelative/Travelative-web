@@ -1,5 +1,5 @@
 const CACHE_TTL_MS = 8 * 60 * 60 * 1000;
-const CACHE_KEY_PREFIX = 'travelative-weather-v1:';
+const CACHE_KEY_PREFIX = 'travelative-weather-v4:';
 
 const memoryCache = new Map();
 const inFlightRequests = new Map();
@@ -91,21 +91,85 @@ function normalizeConditionByTemperature(condition, temperature) {
 async function fetchWeather(location, country) {
     const locationText = String(location || '').trim();
     const countryText = String(country || '').trim();
-    const firstLocationPart = locationText.split(',')[0]?.trim() || '';
+    // Split "Manali, Himachal Pradesh" → ["Manali", "Himachal Pradesh"]
+    const locationParts = locationText.split(',').map((p) => p.trim()).filter(Boolean);
+    const firstLocationPart = locationParts[0] || '';
+    // Build search string like "Manali Himachal Pradesh" (all parts, spaces instead of commas)
+    const fullLocationJoined = locationParts.join(' ');
+
     const candidates = [
+        // Most specific first: "Manali Himachal Pradesh India"
+        `${fullLocationJoined} ${countryText}`.trim(),
+        // Full comma string: "Manali, Himachal Pradesh"
+        locationText,
+        // Just the joined location: "Manali Himachal Pradesh"
+        fullLocationJoined,
+        // First part + country: "Manali India"
         `${firstLocationPart} ${countryText}`.trim(),
-        `${locationText} ${countryText}`.trim(),
+        // Just the first part: "Manali"
+        firstLocationPart,
+        // Last resort: just the country
         countryText,
     ].filter(Boolean);
 
     let first = null;
     for (const candidate of [...new Set(candidates)]) {
-        const geocodeUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(candidate)}&count=1&language=en&format=json`;
+        const geocodeUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(candidate)}&count=10&language=en&format=json`;
         const geocodeRes = await fetch(geocodeUrl, { cache: 'no-store' });
         if (!geocodeRes.ok) continue;
+
         const geocode = await geocodeRes.json();
-        first = geocode?.results?.[0] || null;
-        if (first) break;
+        const results = geocode?.results || [];
+
+        if (results.length > 0) {
+            if (countryText) {
+                // Filter results that match the requested country
+                const countryMatches = results.filter(
+                    (r) => r.country?.toLowerCase() === countryText.toLowerCase()
+                );
+                if (countryMatches.length > 0) {
+                    // If admin entered a state (2nd part of location like "Manali, Himachal Pradesh"),
+                    // try to match against the 'admin1' field returned by the API.
+                    // This gives 100% accurate result without any guesswork.
+                    const stateHint = locationParts[1] || '';
+                    if (stateHint) {
+                        const stateMatch = countryMatches.find(
+                            (r) => r.admin1?.toLowerCase().includes(stateHint.toLowerCase())
+                        );
+                        if (stateMatch) {
+                            first = stateMatch;
+                            break;
+                        }
+                    }
+
+                    // No exact state match — fall back to highest-elevation result.
+                    // This avoids low-lying namesakes (e.g. Manali, Tamil Nadu @6m)
+                    // beating the mountain destination (Manali, Himachal @2108m).
+                    first = countryMatches.reduce(
+                        (best, r) => ((r.elevation || 0) > (best.elevation || 0) ? r : best),
+                        countryMatches[0]
+                    );
+                    break;
+                }
+            } else {
+                // No country specified — just pick highest elevation
+                first = results.reduce(
+                    (best, r) => ((r.elevation || 0) > (best.elevation || 0) ? r : best),
+                    results[0]
+                );
+                break;
+            }
+        }
+    }
+
+    // Fallback: If no exact country match, but we have some results from the very last candidate (usually just the country), use its first result.
+    if (!first) {
+        const fallbackUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(countryText || firstLocationPart)}&count=1&language=en&format=json`;
+        const fallbackRes = await fetch(fallbackUrl, { cache: 'no-store' });
+        if (fallbackRes.ok) {
+            const fallbackGeocode = await fallbackRes.json();
+            first = fallbackGeocode?.results?.[0] || null;
+        }
     }
 
     if (!first) return null;
