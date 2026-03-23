@@ -29,10 +29,11 @@ export default function Sidebar() {
             });
         } catch (e) { }
         // Clear both the JS-accessible cookie and localStorage
-        document.cookie = 'adminToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        document.cookie = 'adminToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax';
         localStorage.removeItem('adminUser');
         localStorage.removeItem('adminToken');
-        router.push('/admin/login');
+        // Use replace() so back button doesn't return to admin panel
+        window.location.replace('/');
     };
 
     const SidebarContent = () => (

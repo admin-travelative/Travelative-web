@@ -34,10 +34,16 @@ export async function middleware(request) {
             return response;
         }
 
-        return NextResponse.next();
+        // Add Cache-Control: no-store so browser never caches admin pages
+        // This prevents back button from showing admin panel after logout
+        const response = NextResponse.next();
+        response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        return response;
     } catch (err) {
         // Fallback if API is down, allow routing but user won't see data
-        return NextResponse.next();
+        const response = NextResponse.next();
+        response.headers.set('Cache-Control', 'no-store');
+        return response;
     }
 }
 

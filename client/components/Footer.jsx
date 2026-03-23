@@ -43,13 +43,13 @@ export default function Footer() {
 
                         {/* Contact Info */}
                         <div className="space-y-3">
-                            <a href="tel:+91XXXXXXXXXX" className="flex items-center gap-3 text-gray-400 hover:text-orange-400 transition-colors duration-200">
+                            <a href="tel:+919927716717" className="flex items-center gap-3 text-gray-400 hover:text-orange-400 transition-colors duration-200">
                                 <Phone className="w-4 h-4 flex-shrink-0" />
-                                <span>+91 070882 21122</span>
+                                <span>+91 99277 16717</span>
                             </a>
-                            <a href="mailto:info@travelative.com" className="flex items-center gap-3 text-gray-400 hover:text-orange-400 transition-colors duration-200">
+                            <a href="mailto:traveladvisor@travelative.com" className="flex items-center gap-3 text-gray-400 hover:text-orange-400 transition-colors duration-200">
                                 <Mail className="w-4 h-4 flex-shrink-0" />
-                                <span>info@travelative.com</span>
+                                <span>traveladvisor@travelative.com</span>
                             </a>
                             <div className="flex items-center gap-3 text-gray-400">
                                 <MapPin className="w-4 h-4 flex-shrink-0" />
