@@ -1,7 +1,15 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const dns = require('dns');
 require('dotenv').config();
+
+// Workaround for MongoDB querySrv ECONNREFUSED error (ISP DNS Block)
+try {
+    dns.setServers(['8.8.8.8', '8.8.4.4']);
+} catch (error) {
+    console.error('Could not set DNS servers:', error);
+}
 
 const app = express();
 
