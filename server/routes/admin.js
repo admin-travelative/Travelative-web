@@ -35,8 +35,8 @@ router.post('/login', async (req, res) => {
         // 4. Set HTTP-only cookie
         res.cookie('adminToken', token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+            secure: true, // Must be true for SameSite=none
+            sameSite: 'none', // Allow cross-domain cookies strictly
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
         });
 
@@ -65,8 +65,8 @@ router.get('/verify', auth, (req, res) => {
 router.post('/logout', (req, res) => {
     res.clearCookie('adminToken', {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict'
+        secure: true,
+        sameSite: 'none'
     });
     res.json({ success: true, message: 'Logged out successfully' });
 });

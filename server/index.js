@@ -16,12 +16,25 @@ try {
 const app = express();
 
 // Middleware
+const allowedOrigins = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    process.env.FRONTEND_URL
+].filter(Boolean);
+
 app.use(cors({
     origin: function (origin, callback) {
-        // Allow all origins dynamically (required for production Vercel domain)
-        return callback(null, true);
+        // Allow requests with no origin (like mobile apps or server-to-server)
+        if (!origin) return callback(null, true);
+
+        // Allow strictly whitelisted origins OR Vercel preview environments
+        if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+            return callback(null, true);
+        }
+        
+        return callback(new Error('Blocked by CORS policy for security.'));
     },
-    credentials: true // Important for cookies
+    credentials: true // Important for secure cookies
 }));
 app.use(express.json({ limit: '50mb' }));
 app.use(cookieParser());
