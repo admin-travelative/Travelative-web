@@ -17,14 +17,58 @@ export default function PackagesPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch(`${API_URL}/api/packages`)
-            .then((r) => r.json())
-            .then((data) => { setPackages(data); setFiltered(data); })
-            .catch(() => { })
-            .finally(() => setLoading(false));
+        const fetchPackages = async () => {
+            const CACHE_KEY = 'travelative_packages';
+            const VERSION_KEY = 'travelative_packages_version';
+            const TIME_KEY = 'travelative_packages_time';
+            const CACHE_DURATION = 15 * 60 * 1000; // 15 mins
+            const now = new Date().getTime();
+
+            try {
+                // 1. Fetch only the tiny version number (highly optimized Redis hit)
+                const versionRes = await fetch(`${API_URL}/api/packages/version`).catch(()=>null);
+                const serverVersion = versionRes && versionRes.ok ? (await versionRes.json()).version : null;
+
+                const localVersion = localStorage.getItem(VERSION_KEY);
+                const localData = localStorage.getItem(CACHE_KEY);
+                const localTime = localStorage.getItem(TIME_KEY);
+
+                // 2. Check if we have valid local cache AND version matches
+                if (localData && localTime && serverVersion && serverVersion.toString() === localVersion) {
+                    if (now - localTime < CACHE_DURATION) {
+                        const parsed = JSON.parse(localData);
+                        setPackages(parsed);
+                        setFiltered(parsed);
+                        setLoading(false);
+                        return; // Cache hit: Exit early avoiding massive payload download!
+                    }
+                }
+
+                // 3. Cache Miss, Expired, or Version Mismatch -> Fetch Fresh Data
+                const res = await fetch(`${API_URL}/api/packages`);
+                const data = await res.json();
+
+                if (Array.isArray(data)) {
+                    localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+                    localStorage.setItem(TIME_KEY, now.toString());
+                    if (serverVersion) localStorage.setItem(VERSION_KEY, serverVersion.toString());
+                    console.log('✅ TRAVELATIVE CACHE: Successfully saved', data.length, 'packages to Local Storage!', { serverVersion });
+                }
+                setPackages(Array.isArray(data) ? data : []);
+                setFiltered(Array.isArray(data) ? data : []);
+            } catch (err) { 
+                setPackages([]);
+                setFiltered([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPackages();
     }, []);
 
     useEffect(() => {
+        if (!Array.isArray(packages)) return;
         let result = [...packages];
 
         // Filter by Destination Type (Domestic = India)

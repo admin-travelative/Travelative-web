@@ -18,21 +18,23 @@ export default function Sidebar() {
     const router = useRouter();
     const [mobileOpen, setMobileOpen] = useState(false);
 
-    const handleLogout = async () => {
+    const handleLogout = () => {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
         const token = localStorage.getItem('adminToken');
-        try {
-            await fetch(`${API_URL}/api/admin/logout`, {
-                method: 'POST',
-                credentials: 'include',
-                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-            });
-        } catch (e) { }
-        // Clear both the JS-accessible cookie and localStorage
+        
+        // Fire server logout in the background (clears httpOnly cookie on server if present)
+        fetch(`${API_URL}/api/admin/logout`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        }).catch(() => {});
+        
+        // Clear client state immediately
         document.cookie = 'adminToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax';
         localStorage.removeItem('adminUser');
         localStorage.removeItem('adminToken');
-        // Use replace() so back button doesn't return to admin panel
+        
+        // Hard redirect so middleware can pick up the cleared cookie
         window.location.replace('/');
     };
 

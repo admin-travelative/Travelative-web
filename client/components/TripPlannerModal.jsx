@@ -22,7 +22,7 @@ import { recommendPackages } from '@/lib/recommendPackages';
 import { getCachedWeather } from '@/lib/weather';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-const WHATSAPP_NUMBER = '919927716717';
+const WHATSAPP_NUMBER = '918373949613';
 const HUGE_NUMBER = Number.MAX_SAFE_INTEGER;
 const DURATION_RANGES = {
     short: { min: 1, max: 3 },

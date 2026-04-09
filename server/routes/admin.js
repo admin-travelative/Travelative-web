@@ -6,6 +6,7 @@ const Admin = require('../models/Admin');
 const Package = require('../models/Package');
 const Enquiry = require('../models/Enquiry');
 const auth = require('../middleware/auth');
+const { invalidateCache } = require('../middleware/cache');
 
 // POST /api/admin/login
 router.post('/login', async (req, res) => {
@@ -100,6 +101,7 @@ router.post('/packages', auth, async (req, res) => {
     try {
         const pkg = new Package(req.body);
         await pkg.save();
+        await invalidateCache('packages');
         res.status(201).json(pkg);
     } catch (err) {
         res.status(400).json({ message: 'Validation error', error: err.message });
@@ -113,6 +115,7 @@ router.put('/packages/:id', auth, async (req, res) => {
         if (!pkg) return res.status(404).json({ message: 'Package not found' });
         Object.assign(pkg, req.body);
         await pkg.save();
+        await invalidateCache('packages');
         res.json(pkg);
     } catch (err) {
         res.status(400).json({ message: 'Validation error', error: err.message });
@@ -124,6 +127,7 @@ router.delete('/packages/:id', auth, async (req, res) => {
     try {
         const pkg = await Package.findByIdAndDelete(req.params.id);
         if (!pkg) return res.status(404).json({ message: 'Package not found' });
+        await invalidateCache('packages');
         res.json({ message: 'Package deleted successfully' });
     } catch (err) {
         res.status(500).json({ message: 'Server error', error: err.message });
