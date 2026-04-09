@@ -26,10 +26,11 @@ export default function AdminLoginPage() {
             const data = await res.json();
             if (!res.ok) throw new Error(data.message || 'Login failed');
 
-            // Token is set as httpOnly cookie by the server — no manual cookie needed
+            // Store token in cookie explicitly so Next.js middleware (Vercel) can read it cross-domain
+            document.cookie = `adminToken=${data.token}; path=/; max-age=604800; samesite=lax`;
+            localStorage.setItem('adminToken', data.token); // Needed for getAuthHeaders() across the app
             localStorage.setItem('adminUser', JSON.stringify(data.admin));
 
-            // Replace instead of hard reload — middleware now verifies JWT locally (no backend round-trip)
             router.replace('/admin');
         } catch (err) {
             setError(err.message || 'Invalid credentials. Please try again.');
