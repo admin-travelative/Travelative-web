@@ -51,7 +51,7 @@ function WhatsAppIcon({ className = '' }) {
 }
 
 export default function HeroSection() {
-    const WHATSAPP_NUMBER = '918373949613';
+    const WHATSAPP_NUMBER = '917088221122';
     const WHATSAPP_MESSAGE = "Hi Travelative! I'm interested in your travel packages. Can you please help me?";
 
     return (
