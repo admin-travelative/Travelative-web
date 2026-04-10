@@ -101,7 +101,7 @@ export default function AboutPage() {
                         </div>
                         <div>
                             <h4 className="font-bold text-gray-900 mb-1">Office Location</h4>
-                            <p className="text-gray-600">Noida, Uttar Pradesh</p>
+                            <p className="text-gray-600">Delhi-NCR, India</p>
                         </div>
                     </div>
 

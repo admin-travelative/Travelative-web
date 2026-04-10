@@ -20,7 +20,7 @@ export default function ContactPage() {
                             {[
                                 { Icon: Phone, title: 'Call Us', details: '+91 70882 21122, +91 83739 49613', sub: 'Available 24/7 for urgent queries' },
                                 { Icon: Mail, title: 'Email', details: 'traveladvisor@travelative.com', sub: 'We reply within 2 hours' },
-                                { Icon: MapPin, title: 'Office', details: 'Phase 1, NH 58, Meerut-Delhi Road', sub: 'Muradnagar, Ghaziabad - 201206' },
+                                { Icon: MapPin, title: 'Office', details: 'Delhi-NCR', sub: 'India' },
                                 { Icon: Clock, title: 'Business Hours', details: 'Monday - Saturday', sub: '10:00 AM to 7:00 PM' }
                             ].map(({ Icon, title, details, sub }, i) => (
                                 <div key={i} className="flex gap-4">
