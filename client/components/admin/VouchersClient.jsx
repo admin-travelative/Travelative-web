@@ -8,6 +8,7 @@ import {
     Link2,
     Loader2,
     MessageCircle,
+    Pencil,
     Plus,
     Save,
     Search,
@@ -297,6 +298,16 @@ export default function VouchersClient() {
         }
     }
 
+    function openPublicVoucher(voucher = activeVoucher) {
+        const voucherId = voucher?._id || activeVoucherId;
+        if (!voucherId || !origin) {
+            setError('Save the voucher before opening its public link.');
+            return;
+        }
+
+        window.open(getVoucherPublicUrl(voucherId, origin), '_blank', 'noopener,noreferrer');
+    }
+
     function shareOnWhatsApp(voucher = activeVoucher) {
         const voucherId = voucher?._id || activeVoucherId;
         const phone = String(voucher?.customerPhone || form.customerPhone || '').replace(/\D/g, '');
@@ -401,10 +412,17 @@ export default function VouchersClient() {
                                         <div className="flex flex-wrap gap-2">
                                             <button
                                                 type="button"
+                                                onClick={() => openPublicVoucher(voucher)}
+                                                className="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition hover:border-slate-300"
+                                            >
+                                                <Eye className="mr-1.5 inline h-3.5 w-3.5" /> View
+                                            </button>
+                                            <button
+                                                type="button"
                                                 onClick={() => handleLoadVoucher(voucher)}
                                                 className="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition hover:border-slate-300"
                                             >
-                                                <Eye className="mr-1.5 inline h-3.5 w-3.5" /> Open In Generator
+                                                <Pencil className="mr-1.5 inline h-3.5 w-3.5" /> Edit
                                             </button>
                                             <button
                                                 type="button"
