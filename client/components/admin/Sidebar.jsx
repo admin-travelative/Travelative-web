@@ -4,13 +4,14 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-    Globe, LayoutDashboard, Package, Mail, LogOut, Menu, X, Settings, ChevronRight
+    Globe, LayoutDashboard, Package, Mail, LogOut, Menu, X, ChevronRight, Ticket
 } from 'lucide-react';
 
 const navItems = [
     { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
     { label: 'Packages', href: '/admin/packages', icon: Package },
     { label: 'Enquiries', href: '/admin/enquiries', icon: Mail },
+    { label: 'Travel Voucher', href: '/admin/vouchers', icon: Ticket },
 ];
 
 export default function Sidebar() {

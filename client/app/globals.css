@@ -297,3 +297,33 @@ h3 {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
+
+@media print {
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .voucher-print-page {
+    min-height: auto !important;
+    background: #ffffff !important;
+    padding: 0 !important;
+  }
+
+  .voucher-print-shell {
+    max-width: none !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  .voucher-print-toolbar {
+    display: none !important;
+  }
+}

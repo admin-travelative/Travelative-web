@@ -7,8 +7,9 @@ import FloatingWhatsApp from './FloatingWhatsApp';
 export default function PublicLayoutWrapper({ children }) {
     const pathname = usePathname();
     const isAdminRoute = pathname?.startsWith('/admin');
+    const isVoucherRoute = pathname?.startsWith('/voucher');
 
-    if (isAdminRoute) {
+    if (isAdminRoute || isVoucherRoute) {
         return <>{children}</>;
     }
 
@@ -21,3 +22,4 @@ export default function PublicLayoutWrapper({ children }) {
         </>
     );
 }
+

@@ -57,6 +57,7 @@ app.use('/api/packages', require('./routes/packages'));
 app.use('/api/enquiry', require('./routes/enquiry'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/alerts', require('./routes/alerts'));
+app.use('/api/vouchers', require('./routes/vouchers'));
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'OK', message: 'Travelative API running' }));
