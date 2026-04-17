@@ -1,10 +1,10 @@
-'use client';
+﻿'use client';
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-    Globe, LayoutDashboard, Package, Mail, LogOut, Menu, X, ChevronRight, Ticket
+    Globe, LayoutDashboard, Package, Mail, LogOut, Menu, X, ChevronRight, Ticket, Map
 } from 'lucide-react';
 
 const navItems = [
@@ -12,6 +12,7 @@ const navItems = [
     { label: 'Packages', href: '/admin/packages', icon: Package },
     { label: 'Enquiries', href: '/admin/enquiries', icon: Mail },
     { label: 'Travel Voucher', href: '/admin/vouchers', icon: Ticket },
+    { label: 'Travel Itinerary', href: '/admin/itineraries', icon: Map },
 ];
 
 export default function Sidebar() {
@@ -23,25 +24,21 @@ export default function Sidebar() {
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
         const token = localStorage.getItem('adminToken');
         
-        // Fire server logout in the background (clears httpOnly cookie on server if present)
         fetch(`${API_URL}/api/admin/logout`, {
             method: 'POST',
             credentials: 'include',
             headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         }).catch(() => {});
         
-        // Clear client state immediately
         document.cookie = 'adminToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax';
         localStorage.removeItem('adminUser');
         localStorage.removeItem('adminToken');
         
-        // Hard redirect so middleware can pick up the cleared cookie
         window.location.replace('/');
     };
 
     const SidebarContent = () => (
         <div className="flex flex-col h-full">
-            {/* Logo */}
             <div className="p-6 border-b border-gray-100">
                 <Link href="/admin" className="flex flex-col items-start gap-1 group">
                     <img src="/Travelative_logo.png" alt="Travelative" className="h-10 sm:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105 origin-left" />
@@ -49,7 +46,6 @@ export default function Sidebar() {
                 </Link>
             </div>
 
-            {/* Nav */}
             <nav className="flex-1 p-4 space-y-1">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-wider px-3 mb-3">Navigation</p>
                 {navItems.map(({ label, href, icon: Icon }) => {
@@ -72,7 +68,6 @@ export default function Sidebar() {
                 })}
             </nav>
 
-            {/* Bottom */}
             <div className="p-4 border-t border-gray-100 space-y-1">
                 <Link href="/" target="_blank" className="flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all">
                     <Globe className="w-5 h-5 text-gray-400" /> View Website
@@ -89,7 +84,6 @@ export default function Sidebar() {
 
     return (
         <>
-            {/* Mobile Toggle */}
             <button
                 onClick={() => setMobileOpen(!mobileOpen)}
                 className="fixed top-4 left-4 z-50 lg:hidden bg-white shadow-md rounded-xl p-2.5 border border-gray-200"
@@ -97,12 +91,10 @@ export default function Sidebar() {
                 {mobileOpen ? <X className="w-5 h-5 text-gray-700" /> : <Menu className="w-5 h-5 text-gray-700" />}
             </button>
 
-            {/* Desktop Sidebar */}
             <aside className="hidden lg:flex flex-col fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-100 shadow-sm z-40">
                 <SidebarContent />
             </aside>
 
-            {/* Mobile Sidebar Overlay */}
             <AnimatePresence>
                 {mobileOpen && (
                     <>
@@ -124,3 +116,4 @@ export default function Sidebar() {
         </>
     );
 }
+

@@ -1,9 +1,9 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { Package, Mail, TrendingUp, Star, Plus, ArrowRight, Ticket } from 'lucide-react';
+import { Package, Mail, TrendingUp, Star, Plus, ArrowRight, Ticket, Map } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -57,6 +57,7 @@ export default function AdminDashboard() {
         { title: 'New Enquiries', value: stats?.newEnquiries, icon: TrendingUp, color: 'bg-orange-100 text-orange-700', subtitle: 'Awaiting response' },
         { title: 'Featured Packages', value: stats?.featuredPackages, icon: Star, color: 'bg-yellow-100 text-yellow-700', subtitle: 'On homepage' },
         { title: 'Travel Vouchers', value: stats?.totalVouchers, icon: Ticket, color: 'bg-slate-100 text-slate-700', subtitle: 'Generated records' },
+        { title: 'Travel Itineraries', value: stats?.totalItineraries, icon: Map, color: 'bg-indigo-100 text-indigo-700', subtitle: 'Planner records' },
     ];
 
     const quickActions = [
@@ -64,6 +65,7 @@ export default function AdminDashboard() {
         { label: 'View All Packages', href: '/admin/packages', Icon: Package, color: 'bg-ocean-600', desc: `Manage ${stats?.totalPackages || 0} packages` },
         { label: 'View Enquiries', href: '/admin/enquiries', Icon: Mail, color: 'bg-orange-500', desc: `${stats?.newEnquiries || 0} new enquiries pending` },
         { label: 'Travel Vouchers', href: '/admin/vouchers', Icon: Ticket, color: 'bg-slate-700', desc: `${stats?.totalVouchers || 0} saved vouchers` },
+        { label: 'Travel Itineraries', href: '/admin/itineraries', Icon: Map, color: 'bg-indigo-600', desc: `${stats?.totalItineraries || 0} saved itineraries` },
         { label: 'View Website', href: '/', Icon: ArrowRight, color: 'bg-gray-700', desc: 'Open your live website' },
     ];
 
@@ -79,7 +81,7 @@ export default function AdminDashboard() {
                 </Link>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-5">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
                 {statCards.map((card, index) => (
                     <motion.div key={card.title} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
                         <StatCard {...card} />
@@ -138,3 +140,4 @@ export default function AdminDashboard() {
         </div>
     );
 }
+

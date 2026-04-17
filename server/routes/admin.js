@@ -5,9 +5,11 @@ const Admin = require('../models/Admin');
 const Package = require('../models/Package');
 const Enquiry = require('../models/Enquiry');
 const Voucher = require('../models/Voucher');
+const Itinerary = require('../models/Itinerary');
 const auth = require('../middleware/auth');
 const { invalidateCache } = require('../middleware/cache');
 const { streamVoucherPdf } = require('../utils/voucherPdf');
+const { streamItineraryPdf } = require('../utils/itineraryPdf');
 
 function cleanList(values = []) {
     return values
@@ -56,12 +58,67 @@ function normalizeVoucherPayload(payload = {}) {
     };
 }
 
+function normalizeItineraryDays(days = []) {
+    return Array.isArray(days)
+        ? days
+            .map((day, index) => ({
+                dayLabel: String(day?.dayLabel || `Day ${index + 1}`).trim(),
+                title: String(day?.title || '').trim(),
+                date: day?.date || undefined,
+                location: String(day?.location || '').trim(),
+                planSummary: String(day?.planSummary || '').trim(),
+                stay: String(day?.stay || '').trim(),
+                meals: String(day?.meals || '').trim(),
+            }))
+            .filter((day) => day.dayLabel || day.title || day.location || day.planSummary || day.stay || day.meals)
+        : [];
+}
+
+function normalizeItineraryPayload(payload = {}) {
+    return {
+        itineraryNumber: String(payload.itineraryNumber || '').trim(),
+        issueDate: payload.issueDate || new Date(),
+        packageTitle: String(payload.packageTitle || '').trim(),
+        destination: String(payload.destination || '').trim(),
+        travelerName: String(payload.travelerName || '').trim(),
+        travelerPhone: String(payload.travelerPhone || '').trim(),
+        travelerEmail: String(payload.travelerEmail || '').trim(),
+        alternateContact: String(payload.alternateContact || '').trim(),
+        travelStartDate: payload.travelStartDate || undefined,
+        travelEndDate: payload.travelEndDate || undefined,
+        durationLabel: String(payload.durationLabel || '').trim(),
+        travelerCount: toOptionalNumber(payload.travelerCount),
+        pickupPoint: String(payload.pickupPoint || '').trim(),
+        dropPoint: String(payload.dropPoint || '').trim(),
+        hotelSummary: String(payload.hotelSummary || '').trim(),
+        transportSummary: String(payload.transportSummary || '').trim(),
+        overview: String(payload.overview || '').trim(),
+        dayPlans: normalizeItineraryDays(payload.dayPlans),
+        inclusions: cleanList(payload.inclusions),
+        exclusions: cleanList(payload.exclusions),
+        importantNotes: cleanList(payload.importantNotes),
+        authorizedBy: String(payload.authorizedBy || '').trim(),
+        customerSupport: String(payload.customerSupport || '').trim(),
+    };
+}
+
 async function generateVoucherNumber() {
     const now = new Date();
     const datePart = `${String(now.getFullYear()).slice(-2)}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
     const prefix = `TV-${datePart}`;
     const count = await Voucher.countDocuments({
         voucherNumber: { $regex: `^${prefix}` }
+    });
+
+    return `${prefix}-${String(count + 1).padStart(3, '0')}`;
+}
+
+async function generateItineraryNumber() {
+    const now = new Date();
+    const datePart = `${String(now.getFullYear()).slice(-2)}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+    const prefix = `TI-${datePart}`;
+    const count = await Itinerary.countDocuments({
+        itineraryNumber: { $regex: `^${prefix}` }
     });
 
     return `${prefix}-${String(count + 1).padStart(3, '0')}`;
@@ -303,17 +360,109 @@ router.post('/vouchers/download', auth, async (req, res) => {
     }
 });
 
+// Itineraries
+router.get('/itineraries', auth, async (req, res) => {
+    try {
+        const itineraries = await Itinerary.find().sort({ createdAt: -1 });
+        res.json(itineraries);
+    } catch (err) {
+        res.status(500).json({ message: 'Server error', error: err.message });
+    }
+});
+
+router.post('/itineraries', auth, async (req, res) => {
+    try {
+        const payload = normalizeItineraryPayload(req.body);
+
+        if (!payload.itineraryNumber) {
+            payload.itineraryNumber = await generateItineraryNumber();
+        }
+
+        const itinerary = new Itinerary(payload);
+        await itinerary.save();
+
+        res.status(201).json(itinerary);
+    } catch (err) {
+        const status = err.code === 11000 ? 409 : 400;
+        res.status(status).json({ message: 'Could not create itinerary', error: err.message });
+    }
+});
+
+router.put('/itineraries/:id', auth, async (req, res) => {
+    try {
+        const itinerary = await Itinerary.findById(req.params.id);
+        if (!itinerary) {
+            return res.status(404).json({ message: 'Itinerary not found' });
+        }
+
+        const payload = normalizeItineraryPayload(req.body);
+
+        if (!payload.itineraryNumber) {
+            payload.itineraryNumber = itinerary.itineraryNumber || await generateItineraryNumber();
+        }
+
+        Object.assign(itinerary, payload);
+        await itinerary.save();
+
+        res.json(itinerary);
+    } catch (err) {
+        const status = err.code === 11000 ? 409 : 400;
+        res.status(status).json({ message: 'Could not update itinerary', error: err.message });
+    }
+});
+
+router.delete('/itineraries/:id', auth, async (req, res) => {
+    try {
+        const itinerary = await Itinerary.findByIdAndDelete(req.params.id);
+        if (!itinerary) {
+            return res.status(404).json({ message: 'Itinerary not found' });
+        }
+
+        res.json({ success: true, message: 'Itinerary deleted successfully' });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error', error: err.message });
+    }
+});
+
+router.post('/itineraries/download', auth, async (req, res) => {
+    try {
+        const payload = normalizeItineraryPayload(req.body);
+
+        if (!payload.itineraryNumber) {
+            payload.itineraryNumber = await generateItineraryNumber();
+        }
+
+        await streamItineraryPdf(res, payload);
+    } catch (err) {
+        res.status(400).json({ message: 'Could not generate itinerary PDF', error: err.message });
+    }
+});
+
+router.get('/itineraries/:id/download', auth, async (req, res) => {
+    try {
+        const itinerary = await Itinerary.findById(req.params.id).lean();
+        if (!itinerary) {
+            return res.status(404).json({ message: 'Itinerary not found' });
+        }
+
+        await streamItineraryPdf(res, itinerary);
+    } catch (err) {
+        res.status(500).json({ message: 'Could not download itinerary', error: err.message });
+    }
+});
+
 router.get('/stats', auth, async (req, res) => {
     try {
-        const [totalPackages, totalEnquiries, newEnquiries, featuredPackages, totalVouchers] = await Promise.all([
+        const [totalPackages, totalEnquiries, newEnquiries, featuredPackages, totalVouchers, totalItineraries] = await Promise.all([
             Package.countDocuments(),
             Enquiry.countDocuments(),
             Enquiry.countDocuments({ status: 'new' }),
             Package.countDocuments({ isFeatured: true }),
             Voucher.countDocuments(),
+            Itinerary.countDocuments(),
         ]);
 
-        res.json({ totalPackages, totalEnquiries, newEnquiries, featuredPackages, totalVouchers });
+        res.json({ totalPackages, totalEnquiries, newEnquiries, featuredPackages, totalVouchers, totalItineraries });
     } catch (err) {
         res.status(500).json({ message: 'Server error', error: err.message });
     }
